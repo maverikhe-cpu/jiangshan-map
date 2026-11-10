@@ -38,9 +38,11 @@ const FEATURE_LISTS = new Set(['polities', 'prefectures', 'regions']);
 // Stamped into every snapshot file so the terms travel with files copied out of the repo.
 const LICENSE_NOTICE =
   'Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas ' +
-  '(https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Prefecture-level ' +
-  '(郡/州/府) boundaries derive from CHGIS V6 and the Hartwell China Historical GIS: academic, non-commercial use ' +
-  'only; do not redistribute; not licensed under GPL-3.0.';
+  '(https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Polity outlines derive from ' +
+  'historical-basemaps (GPL-3.0) and were hand-adjusted. First-level regions are hand-drawn. Prefecture-level ' +
+  '(郡/州/府) boundaries from CHGIS V6 and the Hartwell China Historical GIS are omitted from this distribution, ' +
+  'including copies whose rings matched those boundaries; they are not licensed under GPL-3.0. Obtain them from the ' +
+  'official CHGIS / Harvard Dataverse release if needed. Remaining geometry in this file is GPL-3.0.';
 const SCALE = 100;
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-';
 

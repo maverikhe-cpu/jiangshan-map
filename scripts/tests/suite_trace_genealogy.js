@@ -313,8 +313,8 @@ async function runTraceGenealogySuite(ctx) {
   const jzRocHtml = mockTimelineItems[16].innerHTML;
   const jzPrcHtml = mockTimelineItems[17].innerHTML;
   assert(
-    jzQingHtml.includes('荆州府') && !jzQingHtml.includes('宜昌府'),
-    `Expected Qing row at Jingzhou not to show misleading 100 km neighbor 宜昌府, got ${jzQingHtml}`
+    jzQingHtml.includes('湖北') && !jzQingHtml.includes('宜昌府') && !jzQingHtml.includes('荆州府'),
+    `Expected Qing row at Jingzhou to keep the province and omit CHGIS prefecture names, got ${jzQingHtml}`
   );
   assert(
     jzRocHtml.includes('邻近古城：荆州（即此地）') &&
@@ -1456,20 +1456,16 @@ async function runTraceGenealogySuite(ctx) {
   {
     assert(
       snapshots.s_dongjin_c.regions.length >= 30 &&
-        snapshots.s_dongjin_c.regions.length < snapshots.s_nanbei_b.regions.length &&
-        snapshots.s_nanbei_b.regions.length >= 55 &&
-        snapshots.s_nanbei_b.regions.length < snapshots.s_nanbei_c.regions.length &&
-        snapshots.s_nanbei_c.regions.length < snapshots.s_nanbei_d.regions.length &&
-        snapshots.s_nanbei_d.regions.length < snapshots.s_nanbei_e.regions.length,
-      `Expected strictly increasing 5-stage Zhou subdivision across Eastern Jin -> Nanbeichao`
+        snapshots.s_nanbei_b.regions.length >= 40 &&
+        snapshots.s_nanbei_c.regions.length >= 40 &&
+        snapshots.s_nanbei_d.regions.length >= 30 &&
+        snapshots.s_nanbei_e.regions.length >= 30,
+      'Eastern Jin and Nanbeichao keep hand-drawn regions after exact CHGIS ring copies are removed'
     );
     assert(
-      snapshots.s_dongjin_c.prefectures.length >= 100 &&
-        snapshots.s_dongjin_c.prefectures.length <= 115 &&
-        snapshots.s_nanbei_b.prefectures.length >= 130 &&
-        snapshots.s_nanbei_b.prefectures.length <= 150 &&
-        !snapshots.s_dongjin_c.prefectures.some((p) => p.title === '毗陵典农校尉'),
-      'Expected deduplicated North+South commanderies without Three Kingdoms anachronisms'
+      snapshots.s_dongjin_c.prefectures.length === 0 &&
+        snapshots.s_nanbei_b.prefectures.length === 0,
+      'Commandery polygons derived from CHGIS are not published'
     );
 
     const spotCases = [
@@ -1497,16 +1493,26 @@ async function runTraceGenealogySuite(ctx) {
       [{ lng: 109.5, lat: 31.02, year: 520 }, '信州', '巴东郡'],
       [{ lng: 119.3, lat: 26.08, year: 560 }, '闽州', '晋安郡'],
     ];
-    for (const [opts, expReg, expPref] of spotCases) {
+    for (const [opts, expReg] of spotCases) {
       const info = ctrl.inspect(opts);
-      assert(
-        info && info.regions.includes(expReg),
-        `inspect(${JSON.stringify(opts)}) expected region "${expReg}", got ${JSON.stringify(info && info.regions)}`
-      );
-      assert(
-        info && info.prefectures.includes(expPref),
-        `inspect(${JSON.stringify(opts)}) expected commandery "${expPref}", got ${JSON.stringify(info && info.prefectures)}`
-      );
+      const dyn = dynasties.find((d) => opts.year >= d.fromYear && opts.year <= d.toYear);
+      const sk = ctrl._resolveSnapKey(dyn, opts.year);
+      const published = (snapshots[sk].regions || []).some((r) => {
+        const formatted = r.category && !String(r.title).endsWith(r.category) ? `${r.title}(${r.category})` : r.title;
+        return formatted === expReg || r.title === expReg;
+      });
+      assert(info && info.prefectures.length === 0, `inspect(${JSON.stringify(opts)}) must not return a CHGIS commandery`);
+      if (published) {
+        assert(
+          info.regions.includes(expReg),
+          `inspect(${JSON.stringify(opts)}) expected region "${expReg}", got ${JSON.stringify(info.regions)}`
+        );
+      } else {
+        assert(
+          !info.regions.includes(expReg),
+          `inspect(${JSON.stringify(opts)}) must not report removed CHGIS copy "${expReg}"`
+        );
+      }
     }
 
     const capturedNodes = [];

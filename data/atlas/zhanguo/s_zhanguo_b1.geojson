@@ -1,6 +1,6 @@
 {
   "type": "FeatureCollection",
-  "license": "Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas (https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Prefecture-level (郡/州/府) boundaries derive from CHGIS V6 and the Hartwell China Historical GIS: academic, non-commercial use only; do not redistribute; not licensed under GPL-3.0.",
+  "license": "Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas (https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Polity outlines derive from historical-basemaps (GPL-3.0) and were hand-adjusted. First-level regions are hand-drawn. Prefecture-level (郡/州/府) boundaries from CHGIS V6 and the Hartwell China Historical GIS are omitted from this distribution, including copies whose rings matched those boundaries; they are not licensed under GPL-3.0. Obtain them from the official CHGIS / Harvard Dataverse release if needed. Remaining geometry in this file is GPL-3.0.",
   "snapshot": {
     "caption": "战国中期（前306 — 前301 · 楚怀王灭越与胡服骑射）",
     "note": "前306年楚怀王乘越国内乱攻灭越国，尽取旧吴之地并置江东；北方赵武灵王推行胡服骑射，中山与义渠尚存，燕国尚未东辟辽东。",
@@ -40,22 +40,8 @@
       "s_zhanguo_a/阿拉干",
       "s_zhanguo_a/岛夷诸部"
     ],
-    "prefectures": [
-      "s_zhanguo_a/关中（内史）",
-      "s_zhanguo_a/上郡",
-      "s_zhanguo_a/上党郡",
-      "s_zhanguo_b0/汉中郡",
-      "s_zhanguo_b0/蜀郡",
-      "s_zhanguo_b0/巴郡"
-    ],
-    "regions": [
-      "s_zhanguo_a/关中（内史）",
-      "s_zhanguo_a/上郡",
-      "s_zhanguo_a/上党郡",
-      "s_zhanguo_b0/汉中郡",
-      "s_zhanguo_b0/蜀郡",
-      "s_zhanguo_b0/巴郡"
-    ]
+    "prefectures": [],
+    "regions": []
   },
   "features": [
     {

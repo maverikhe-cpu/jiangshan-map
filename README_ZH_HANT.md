@@ -243,14 +243,14 @@ docker compose up -d --build
 
 ## GeoJSON 匯出（供 Leaflet / MapLibre / QGIS 使用）
 
-程式內建的幾何資料是拓撲去重的 VLQ 緊湊編碼。如需在其他專案中使用向量圖層，可在本機產生標準 RFC 7946 GeoJSON（EPSG:4326，經度/緯度），輸出到 `geojson/`，不納入版本庫。匯出範圍為西元前 403 年至 1948 年，不含此後年份及現代省界圖層。郡 / 州 / 府圖層源自 CHGIS，其條款禁止再分發，因此預設不匯出；如需在本機做學術、非商業用途，可加 `--with-prefectures` 參數匯出，匯出結果請勿公開發布：
+程式內建的幾何資料是拓撲去重的 VLQ 緊湊編碼。如需在其他專案中使用向量圖層，可在本機產生標準 RFC 7946 GeoJSON（EPSG:4326，經度/緯度），輸出到 `geojson/`，不納入版本庫。匯出範圍為西元前 403 年至 1948 年，不含此後年份及現代省界圖層。郡 / 州 / 府圖層已從本發行版移除，`--with-prefectures` 會直接拒絕：
 
 ```bash
 node scripts/export_geojson.js            # 或：node scripts/export_geojson.js <輸出目錄>
-node scripts/export_geojson.js --with-prefectures   # 附帶源自 CHGIS 的郡州府圖層（僅限本機學術用途）
+# --with-prefectures 已停用：本發行版不含 CHGIS 郡州府邊界
 ```
 
-- `snapshots/<id>.geojson`：每個疆域階段一個檔案；每個要素帶 `bbox`，屬性含 `layer`（`polity` 政權 / `region` 一級政區；加 `--with-prefectures` 時另含 `prefecture` 州郡）、`title`、`title_en`、`category`、`tint`、`anchor`。
+- `snapshots/<id>.geojson`：每個疆域階段一個檔案；每個要素帶 `bbox`，屬性含 `layer`（`polity` 政權 / `region` 一級政區）、`title`、`title_en`、`category`、`tint`、`anchor`。不含郡州府圖層。
 - `index.json`：各朝代階段的起止年份 `from` / `to`（負數為西元前，無西元 0 年）及對應快照檔案。
 - `corridors.geojson`（長城、運河、道路、海路）、`settlements.geojson`、`milestones.geojson`、`neighbors.geojson`，以及 `modern/`（河流、湖泊、水系註記；`appear` / `vanish` 表示古河道與古湖泊顯示的起止年份）。
 
@@ -261,23 +261,23 @@ const atlas = JiangshanLocate.create(); // 或 create({ base: '<geojson/ 目錄�
 const hit = await atlas.locate(118.78, 32.06, 1415); // 經度, 緯度, 年份
 hit.polity.properties.title;     // 明
 hit.region.properties.title;     // 南直隸
-hit.prefecture;                  // 預設為 null；加 --with-prefectures 匯出時為 應天府
+hit.prefecture;                  // 恆為 null：本發行版不含郡州府多邊形
 ```
 
-匯出後啟動本機服務（`python3 -m http.server 8000`），開啟 `http://localhost:8000/geojson/demo.html` 即可查看 Leaflet 範例：拖動年份滑塊、點選地圖，或開啟 `demo.html?year=1415&lon=118.78&lat=32.06` 自動載入、高亮並縮放到該處。歷史疆域為示意性近似，並非測繪邊界。資料採用 GPL-3.0 授權，郡 / 州 / 府級邊界除外，詳見[資料來源與授權](#資料來源與授權)。
+匯出後啟動本機服務（`python3 -m http.server 8000`），開啟 `http://localhost:8000/geojson/demo.html` 即可查看 Leaflet 範例：拖動年份滑塊、點選地圖，或開啟 `demo.html?year=1415&lon=118.78&lat=32.06` 自動載入、高亮並縮放到該處。歷史疆域為示意性近似，並非測繪邊界。匯出資料採用 GPL-3.0。郡 / 州 / 府級邊界不在其中，詳見[資料來源與授權](#資料來源與授權)。
 
 ---
 
 ## 資料來源與授權
 
-程式碼和本專案自行整理的資料均採用 **GPL-3.0**。只有一層例外：源自 CHGIS 的郡 / 州 / 府級邊界，仍受 CHGIS 原始條款約束。
+程式碼和本專案自行整理的資料均採用 **GPL-3.0**。源自 CHGIS 的郡 / 州 / 府級邊界已從本發行版移除，仍受 CHGIS 原始條款約束。
 
 | 圖層 | 來源 | 授權 |
 | :-- | :-- | :-- |
 | 程式碼（頁面、腳本、CLI、MCP 服務） | 本專案 | GPL-3.0 |
 | 政權疆域輪廓（`polity`） | 以 [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)（GPL-3.0）為起點，此後依據史籍手工重繪 | GPL-3.0 |
 | 一級政區（`region`：刺史部 / 道 / 路 / 省等） | 依據史籍手工繪製；早期版本的原始來源未記錄 | GPL-3.0 |
-| **郡 / 州 / 府級邊界**（`prefecture`，含戰國與秦的郡） | 源自 **CHGIS V6** 與 **Robert M. Hartwell China Historical GIS**，簡化至 0.01° 並經手工調整 | **不適用 GPL-3.0**。僅限學術、非商業用途，不得再分發，詳見下文 |
+| **郡 / 州 / 府級邊界**（`prefecture`） | 曾源自 **CHGIS V6** 與 **Hartwell China Historical GIS**。**本發行版已移除**，含整環與之相同的區域副本 | **不隨本倉庫發布**。不適用 GPL-3.0。學術、非商業、不得再分發。請向 Harvard Dataverse 取得 |
 | 古地名、重大事件、行跡路線、人物年譜、地名沿革 | 本專案依據史籍整理 | GPL-3.0 |
 | 現代省界 | DataV GeoAtlas（阿里雲） | 以 DataV GeoAtlas 條款為準 |
 | 河流、湖泊、周邊國家 | 公有領域資料 | 公有領域 |
@@ -286,11 +286,11 @@ hit.prefecture;                  // 預設為 null；加 --with-prefectures 匯�
 
 **參考資料（非資料來源）**：邊界依據史籍並參照譚其驤主編《中國歷史地圖集》核對。本倉庫不包含該圖集的任何圖像或資料。
 
-**郡 / 州 / 府級邊界（CHGIS）**：該圖層不適用 GPL-3.0，僅用於本站非商業的科普展示。請勿從本倉庫轉載或再分發；如需郡州府邊界，請從 CHGIS 官方管道（Harvard Dataverse）按其條款獲取。`scripts/export_geojson.js` 預設不匯出該圖層，加 `--with-prefectures` 參數才會匯出。引用格式：*CHGIS, Version: 6. © Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.* 資料來源細節見 [data/atlas/README.md](data/atlas/README.md)。
+**郡 / 州 / 府級邊界（CHGIS）**：該圖層不在本發行版的源資料、打包腳本或 GeoJSON 匯出中，不適用 GPL-3.0。請勿加回。如需郡州府邊界，請從 CHGIS 官方管道（Harvard Dataverse）按其條款獲取。`scripts/export_geojson.js` 拒絕 `--with-prefectures`。官方副本的引用格式：*CHGIS, Version: 6. © Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.* 資料來源細節見 [data/atlas/README.md](data/atlas/README.md)。
 
 **近似邊界**：地圖中的歷史疆域與政區邊界為示意性近似，用於直觀呈現各時期大致的管轄範圍，並非測繪成果，請勿作為精確或權威的邊界依據引用。
 
-**轉載與復用**：復用 GPL-3.0 圖層時，請註明「江山時序 Jiangshan Atlas」並附 https://github.com/DeanChensj/jiangshan-map ，同時註明上文所列原始來源。含郡州府圖層的截圖同樣受 CHGIS 條款約束。
+**轉載與復用**：復用 GPL-3.0 圖層時，請註明「江山時序 Jiangshan Atlas」並附 https://github.com/DeanChensj/jiangshan-map ，同時註明上文所列原始來源。
 
 **權利人聯絡**：如果您是本倉庫中某項內容的權利人，認為使用不當，請[提交 issue](https://github.com/DeanChensj/jiangshan-map/issues)，我們會及時回覆，必要時刪除。
 

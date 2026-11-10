@@ -12,18 +12,18 @@ This directory is the editable source of `js/atlas_snapshots.js` and `js/atlas_b
 
 The original import scripts are not in this repository, so provenance is reconstructed from the project's early documentation:
 
-- **Prefecture-level boundaries** (`prefectures`: commanderies, prefectures and superior prefectures, i.e. 郡 / 州 / 府) are derived from **CHGIS V6** (Fairbank Center for Chinese Studies, Harvard University & Center for Historical Geographical Studies, Fudan University) and the **Robert M. Hartwell China Historical GIS** datasets.
+- **Prefecture-level boundaries** (`prefectures`: 郡 / 州 / 府) derived from **CHGIS V6** and the **Robert M. Hartwell China Historical GIS** are **not in this distribution**. Their arrays are empty, and features that were only those polygons — including region entries whose entire ring matched a CHGIS prefecture ring — have been removed. Obtain that layer from the official CHGIS / Harvard Dataverse release. It is academic, non-commercial, and not redistributable, and it is not GPL-3.0.
 - **Polity outlines** (`polities`) are derived from [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps) (GPL-3.0).
-- **First-level divisions** (`regions`: 刺史部 / 道 / 路 / 省, etc.) are drawn by hand from historical texts; the source of their early versions was not recorded. Most do not share boundaries with the prefecture layer.
+- **First-level divisions** (`regions`: 刺史部 / 道 / 路 / 省, etc.) are drawn by hand from historical texts; the source of their early versions was not recorded. A few Qin and Northern–Southern commandery or prefecture polygons that were the CHGIS features themselves, or exact ring copies of them, are omitted with the prefecture layer. Some remaining polity and region rings still share a border segment with a former prefecture ring after 0.01° rounding; those outlines are kept.
 - All geometry has since been simplified (0.01° precision) and hand-adjusted against historical texts, with Tan Qixiang's *The Historical Atlas of China* (谭其骧主编《中国历史地图集》) as the main reference for checking; no map images or data from that atlas are included in this repository. Boundaries are schematic approximations, not surveyed borders. The source of each individual feature is not recorded.
 
-原始导入脚本不在仓库中，以上来源依据项目早期文档整理：郡 / 州 / 府级边界（`prefectures`）源自 CHGIS V6 与 Hartwell 数据；政权轮廓（`polities`）源自 historical-basemaps（GPL-3.0）；一级政区（`regions`）依据史籍手工绘制，早期版本来源未记录。所有几何此后均经过简化，并依据史籍、参照谭图核对后手工调整；本仓库不包含谭图的任何图像或数据。
+原始导入脚本不在仓库中，以上来源依据项目早期文档整理。本发行版已去掉郡 / 州 / 府级边界（`prefectures`）及其整环与 CHGIS 相同的副本；该层源自 CHGIS V6 与 Hartwell，学术非商业且禁止再分发，不适用 GPL-3.0。政权轮廓（`polities`）源自 historical-basemaps（GPL-3.0）。一级政区（`regions`）依据史籍手工绘制，早期版本来源未记录；与府界整环相同的副本已随府界移除。所有保留几何均经过简化，并依据史籍、参照谭图核对后手工调整；本仓库不包含谭图的任何图像或数据。
 
 ## License · 许可
 
-- Boundaries derived from **CHGIS V6** and the **Hartwell China Historical GIS** remain under their original terms: **academic, non-commercial use only; do not redistribute**. They are **not** licensed under GPL-3.0. Do not republish them from this repository; if you need prefecture boundaries, obtain them from the official CHGIS / Harvard Dataverse distribution. `scripts/export_geojson.js` leaves this layer out unless run with `--with-prefectures`.
-- Cite CHGIS as: *CHGIS, Version: 6. © Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.*
+- Boundaries derived from **CHGIS V6** and the **Hartwell China Historical GIS** are **not shipped**. Their terms remain **academic, non-commercial use only; do not redistribute**, and they are **not** GPL-3.0. Do not add them back to this repository. Obtain them from the official CHGIS / Harvard Dataverse distribution. `scripts/export_geojson.js` rejects `--with-prefectures`.
+- If you use CHGIS from that official distribution, cite: *CHGIS, Version: 6. © Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.*
 - Everything else in this directory follows the repository license (GPL-3.0).
 - **Attribution**: when reusing these boundaries, maps or screenshots, credit **江山时序 Jiangshan Atlas** (https://github.com/DeanChensj/jiangshan-map) and the upstream sources above.
 
-源自 CHGIS V6 与 Hartwell China Historical GIS 的边界数据仍受其原始条款约束（仅限学术、非商业用途，不得再分发），不适用 GPL-3.0；请勿从本仓库转载，如需郡州府边界，请从 CHGIS / Harvard Dataverse 官方渠道获取。`scripts/export_geojson.js` 默认不导出该图层，加 `--with-prefectures` 参数才会导出。其余内容遵循仓库的 GPL-3.0 许可。转载或引用这些边界、地图或截图时，请注明「江山时序 Jiangshan Atlas」（https://github.com/DeanChensj/jiangshan-map）及上述原始数据来源。
+源自 CHGIS V6 与 Hartwell China Historical GIS 的郡州府边界已从本发行版移除，仍受其原始条款约束（仅限学术、非商业用途，不得再分发），不适用 GPL-3.0。请勿把该层加回本仓库；如需郡州府边界，请从 CHGIS / Harvard Dataverse 官方渠道获取。`scripts/export_geojson.js` 拒绝 `--with-prefectures`。其余内容遵循仓库的 GPL-3.0 许可。转载或引用这些边界、地图或截图时，请注明「江山时序 Jiangshan Atlas」（https://github.com/DeanChensj/jiangshan-map）及上述原始数据来源。

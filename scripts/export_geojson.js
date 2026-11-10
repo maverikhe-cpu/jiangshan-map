@@ -9,13 +9,12 @@
  * Coverage ends in 1948: years from 1949 on (the PRC period, s_prc) and the
  * modern province layer are not exported.
  *
- * The prefecture layer (郡 / 州 / 府) is left out by default: it derives from
- * CHGIS V6 and the Hartwell China Historical GIS, whose terms allow academic,
- * non-commercial use only and forbid redistribution. --with-prefectures adds
- * it for local academic use; files that then contain it carry those terms.
+ * Prefecture-level (郡 / 州 / 府) boundaries derived from CHGIS are not in this
+ * distribution. --with-prefectures is rejected so a public export cannot
+ * republish them. Obtain that layer from Harvard Dataverse under its own terms.
  *
  * Usage:
- *   node scripts/export_geojson.js [outDir] [--with-prefectures]   # default outDir: geojson/
+ *   node scripts/export_geojson.js [outDir]   # default outDir: geojson/
  */
 'use strict';
 
@@ -25,7 +24,13 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const ARGS = process.argv.slice(2);
-const WITH_PREFECTURES = ARGS.includes('--with-prefectures');
+if (ARGS.includes('--with-prefectures')) {
+  console.error(
+    '--with-prefectures is disabled. Prefecture boundaries derived from CHGIS are not in this distribution. ' +
+      'Obtain them from Harvard Dataverse; do not republish them from this repository.'
+  );
+  process.exit(1);
+}
 const OUT = path.resolve(ROOT, ARGS.find((a) => !a.startsWith('--')) || 'geojson');
 
 const ctx = { window: {} };
@@ -43,11 +48,8 @@ const DICT = EN.dict || {};
 const CUTOFF = 1949;
 
 const LICENSE =
-  'GPL-3.0 · jiangshan-map (Chronicles of the Realm). Historical borders are schematic approximations, not survey-grade boundaries.';
-const PREFECTURE_LICENSE =
-  'Contains prefecture-level (郡/州/府) boundaries derived from CHGIS V6 and the Hartwell China Historical GIS: ' +
-  'academic, non-commercial use only; do not redistribute; not licensed under GPL-3.0. Other layers: ' +
-  LICENSE;
+  'GPL-3.0 · jiangshan-map (Chronicles of the Realm). Historical borders are schematic approximations, not survey-grade boundaries. ' +
+  'Prefecture-level (郡/州/府) boundaries derived from CHGIS are not included.';
 
 // ---------- geometry helpers ----------
 
@@ -128,7 +130,10 @@ function feature(geometry, props) {
 
 function collection(name, features, meta = {}) {
   const fs_ = features.filter(Boolean);
-  const license = fs_.some((f) => f.properties.layer === 'prefecture') ? PREFECTURE_LICENSE : LICENSE;
+  if (fs_.some((f) => f.properties.layer === 'prefecture')) {
+    throw new Error('Refusing to export a prefecture feature. CHGIS prefecture boundaries are not in this distribution.');
+  }
+  const license = LICENSE;
   return { type: 'FeatureCollection', name, ...clean(meta), license, bbox: bbox(fs_), features: fs_ };
 }
 
@@ -189,13 +194,12 @@ for (const [key, s] of Object.entries(SNAPSHOTS)) {
 
 for (const [key, s] of Object.entries(SNAPSHOTS)) {
   if (key === 'neighbors' || !snapUse[key]) continue; // not shown before CUTOFF
-  const { polities, prefectures: prefs, regions } = lists[key];
+  const { polities, regions } = lists[key];
   const use = snapUse[key];
   files[`snapshots/${key}.geojson`] = collection(
     key,
     [
       ...snapshotLayer(regions, 'region'),
-      ...(WITH_PREFECTURES ? snapshotLayer(prefs, 'prefecture') : []),
       ...snapshotLayer(polities, 'polity')
     ],
     {
@@ -287,13 +291,11 @@ files['milestones.geojson'] = collection('milestones', milestones);
 
 files['index.json'] = {
   name: 'jiangshan-map GeoJSON export',
-  license: WITH_PREFECTURES ? PREFECTURE_LICENSE : LICENSE,
+  license: LICENSE,
   crs: 'EPSG:4326 (lon, lat), RFC 7946 winding',
   years: 'Integer years; negative = BCE. There is no year 0 (-1 is 1 BCE, 1 is 1 CE).',
   coverage: `${W.DYNASTY_DATA[0].fromYear} to ${CUTOFF - 1}; later years and modern provinces are not exported`,
-  prefecture_layer: WITH_PREFECTURES
-    ? 'included (--with-prefectures): CHGIS-derived, academic non-commercial use only, do not redistribute'
-    : 'not exported (CHGIS terms); rerun with --with-prefectures for local academic use',
+  prefecture_layer: 'omitted: CHGIS-derived prefecture boundaries are not in this distribution',
   layers: {
     corridors: 'corridors.geojson',
     settlements: 'settlements.geojson',

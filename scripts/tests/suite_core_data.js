@@ -44,10 +44,11 @@ async function runCoreDataSuite(ctx) {
       Array.isArray(loreData.PLACE_LANDMARK_EVENTS) &&
       loreData.PLACE_LANDMARK_EVENTS.length >= 60 &&
       Array.isArray(loreData.HISTORICAL_JOURNEYS) &&
-      loreData.HISTORICAL_JOURNEYS.length === 7 &&
+      loreData.HISTORICAL_JOURNEYS.length === 8 &&
+      loreData.HISTORICAL_JOURNEYS.some((j) => j.key === 'linshi-daxue') &&
       Array.isArray(loreData.STRATEGIC_PASSES) &&
       loreData.STRATEGIC_PASSES.length >= 18,
-    'ATLAS_LORE_DATA must provide era spans, landmark events, strategic passes, and 7 historical journeys'
+    'ATLAS_LORE_DATA must provide era spans, landmark events, strategic passes, and 8 historical journeys'
   );
   for (const p of loreData.STRATEGIC_PASSES) {
     assert(

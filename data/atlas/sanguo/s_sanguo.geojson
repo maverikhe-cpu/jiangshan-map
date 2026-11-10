@@ -1,6 +1,6 @@
 {
   "type": "FeatureCollection",
-  "license": "Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas (https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Prefecture-level (郡/州/府) boundaries derive from CHGIS V6 and the Hartwell China Historical GIS: academic, non-commercial use only; do not redistribute; not licensed under GPL-3.0.",
+  "license": "Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas (https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Polity outlines derive from historical-basemaps (GPL-3.0) and were hand-adjusted. First-level regions are hand-drawn. Prefecture-level (郡/州/府) boundaries from CHGIS V6 and the Hartwell China Historical GIS are omitted from this distribution, including copies whose rings matched those boundaries; they are not licensed under GPL-3.0. Obtain them from the official CHGIS / Harvard Dataverse release if needed. Remaining geometry in this file is GPL-3.0.",
   "snapshot": {
     "caption": "238 — 263 · 司马懿平辽东与三国鼎立：曹魏灭公孙渊收复辽东乐浪，与蜀吴三分天下",
     "note": "州郡政区：魏蜀吴州郡政区",
@@ -26,32 +26,7 @@
       "s_donghan_a/乌孙",
       "s_sanguo_a/夷洲"
     ],
-    "prefectures": [
-      "s_sanguo_a/吴郡",
-      "s_sanguo_a/毗陵典农校尉",
-      "s_sanguo_a/会稽郡",
-      "s_sanguo_a/新都郡",
-      "s_sanguo_a/丹阳郡",
-      "s_sanguo_a/庐陵郡",
-      "s_sanguo_a/豫章郡",
-      "s_sanguo_a/鄱阳郡",
-      "s_sanguo_a/武陵郡",
-      "s_sanguo_a/零陵郡",
-      "s_sanguo_a/长沙郡",
-      "s_xihan_a/南海郡",
-      "s_sanguo_a/苍梧郡",
-      "s_sanguo_a/临贺郡",
-      "s_sanguo_a/高凉郡",
-      "s_sanguo_a/珠官郡",
-      "s_sanguo_a/朱崖郡",
-      "s_donghan/朱崖洲",
-      "s_donghan/桂阳郡",
-      "s_sanguo_a/东海国",
-      "s_sanguo_a/广陵郡",
-      "s_sanguo_a/彭城国",
-      "s_sanguo_a/下邳郡",
-      "s_sanguo_a/沛国"
-    ],
+    "prefectures": [],
     "regions": [
       "s_sanguo_a/司隶",
       "s_sanguo_a/豫州",

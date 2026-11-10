@@ -366,11 +366,12 @@ async function runApiSearchSuite(ctx) {
     'Empty quick-search dropdown must render a single rotatable showcase row + search guide chips without bulky .sr-section-head banners'
   );
 
-  // CUJ 9j: 7 Historical Journeys Full Stop & Bilingual Completeness Verification
+  // CUJ 9j: Historical journeys — bilingual stops. The 1937–1938 university move has four sourced city stops.
   let totalJourneyStops = 0;
   for (const j of loreData.HISTORICAL_JOURNEYS) {
+    const minStops = j.key === 'linshi-daxue' ? 4 : 8;
     assert(
-      j.key && j.titleZh && j.titleEn && Array.isArray(j.stops) && j.stops.length >= 8,
+      j.key && j.titleZh && j.titleEn && Array.isArray(j.stops) && j.stops.length >= minStops,
       `Invalid journey metadata for ${j && j.key}`
     );
     for (const st of j.stops) {
@@ -434,29 +435,28 @@ async function runApiSearchSuite(ctx) {
     );
   }
 
-  // CUJ 9k2: GeoJSON export keeps the CHGIS-derived prefecture layer out by default, and any exported
-  // file that does contain it (--with-prefectures) carries the CHGIS terms instead of GPL-3.0.
+  // CUJ 9k2: The public GeoJSON export has no prefecture layer, and --with-prefectures is rejected
+  // so a publish step cannot republish CHGIS boundaries.
   if (!FAST_MODE) {
     const exportScript = path.join(ROOT, 'scripts', 'export_geojson.js');
     const exportRoot = fs.mkdtempSync(path.join(require('os').tmpdir(), 'jiangshan-export-'));
     try {
-      for (const withPref of [false, true]) {
-        const outDir = path.join(exportRoot, withPref ? 'with' : 'default');
-        execFileSync(process.execPath, [exportScript, outDir, ...(withPref ? ['--with-prefectures'] : [])], { encoding: 'utf8' });
-        let prefFiles = 0;
-        for (const f of fs.readdirSync(path.join(outDir, 'snapshots'))) {
-          const fc = JSON.parse(fs.readFileSync(path.join(outDir, 'snapshots', f), 'utf8'));
-          const hasPref = fc.features.some((ft) => ft.properties.layer === 'prefecture');
-          if (hasPref) prefFiles++;
-          assert(!hasPref || withPref, `Default GeoJSON export must not include the CHGIS prefecture layer (${f})`);
-          assert.strictEqual(
-            fc.license.includes('CHGIS'),
-            hasPref,
-            `Export ${f}: the license must name CHGIS exactly when the file contains prefecture features`
-          );
-        }
-        assert(!withPref || prefFiles > 150, `--with-prefectures must export the prefecture layer, got ${prefFiles} files`);
+      const outDir = path.join(exportRoot, 'default');
+      execFileSync(process.execPath, [exportScript, outDir], { encoding: 'utf8' });
+      for (const f of fs.readdirSync(path.join(outDir, 'snapshots'))) {
+        const fc = JSON.parse(fs.readFileSync(path.join(outDir, 'snapshots', f), 'utf8'));
+        assert(
+          !fc.features.some((ft) => ft.properties.layer === 'prefecture'),
+          `GeoJSON export must not include a prefecture layer (${f})`
+        );
       }
+      let rejected = false;
+      try {
+        execFileSync(process.execPath, [exportScript, path.join(exportRoot, 'with'), '--with-prefectures'], { encoding: 'utf8' });
+      } catch (err) {
+        rejected = err.status !== 0;
+      }
+      assert(rejected, '--with-prefectures must exit non-zero because CHGIS prefectures are not in this distribution');
     } finally {
       fs.rmSync(exportRoot, { recursive: true, force: true });
     }
@@ -672,6 +672,13 @@ async function runApiSearchSuite(ctx) {
           snapshotsChecked++;
         }
       });
+      const withRegions = entries.filter(([, s]) => Array.isArray(s.regions) && s.regions.length);
+      const step = Math.max(1, Math.floor(withRegions.length / 8));
+      withRegions.forEach(([key, snapshot], i) => {
+        if (i % step !== 0) return;
+        checkBoundary(snapshot, `${key}#regions`);
+        snapshotsChecked++;
+      });
       assert(snapshotsChecked >= 8 && anchorsChecked > 600, 'Fast-mode boundary equivalence sample must cover representative snapshots');
     } else {
       const workerResults = await boundarySweepPromise;
@@ -679,8 +686,11 @@ async function runApiSearchSuite(ctx) {
         snapshotsChecked += r.snapshotsChecked;
         anchorsChecked += r.anchorsChecked;
       }
-      assert(snapshotsChecked > 180 && anchorsChecked > 16000,
-        'Boundary equivalence must cover the full atlas');
+      // Prefecture rings no longer define a region layer, so empty-region snapshots
+      // do not install _allowRegionAnchor and contribute no anchors. The floor is
+      // the remaining first-level region sample, not the old commandery-inflated count.
+      assert(snapshotsChecked > 180 && anchorsChecked > 12000,
+        `Boundary equivalence must cover the full atlas (snapshots=${snapshotsChecked}, anchors=${anchorsChecked})`);
     }
 
     const rectangle = (x0, y0, x1, y1) => ({
@@ -755,6 +765,8 @@ async function runApiSearchSuite(ctx) {
     's_prc must skip duplicate region boundary stroke over modern grpProvinces'
   );
   if (!FAST_MODE) {
+    // These snapshots' region lists were only CHGIS commandery copies. They stay empty.
+    const chgisRegionOnly = new Set(['s_zhanguo_a', 's_zhanguo_b0', 's_qin_a', 's_qin']);
     for (const checkSnapKey of [
       's_zhanguo_a',
       's_zhanguo_b0',
@@ -787,6 +799,33 @@ async function runApiSearchSuite(ctx) {
       's_roc',
     ]) {
       const checkSnap = snapshots[checkSnapKey];
+      if (chgisRegionOnly.has(checkSnapKey)) {
+        assert(
+          checkSnap && Array.isArray(checkSnap.regions) && checkSnap.regions.length === 0,
+          `${checkSnapKey} must not republish removed CHGIS commandery regions`
+        );
+        assert.strictEqual(
+          ctrl._buildRegionBoundaryPath(checkSnap),
+          '',
+          `${checkSnapKey} region boundary must stay empty`
+        );
+        continue;
+      }
+      if (checkSnapKey === 's_qin_b') {
+        assert(
+          checkSnap &&
+            Array.isArray(checkSnap.regions) &&
+            checkSnap.regions.length === 1 &&
+            checkSnap.regions[0].title === '九原郡',
+          's_qin_b keeps only the non-copied 九原郡 region'
+        );
+        assert.strictEqual(
+          ctrl._buildRegionBoundaryPath(checkSnap),
+          '',
+          'one remaining commandery has no shared border for the region mesh'
+        );
+        continue;
+      }
       assert(checkSnap && Array.isArray(checkSnap.regions) && checkSnap.regions.length > 0, `Missing regions on ${checkSnapKey}`);
       const regPath = ctrl._buildRegionBoundaryPath(checkSnap);
       const minPathLen = checkSnapKey === 's_zhanguo_a' ? 150 : 500;
@@ -1047,9 +1086,10 @@ async function runApiSearchSuite(ctx) {
   ctrl.lastRenderedSnap = song1082Snap;
   ctrl.activeTrace = [114.88, 30.45]; // Huangzhou
   ctrl._syncTracedPrefecture();
+  assert.strictEqual((song1082Snap.prefectures || []).length, 0, '1082 must not publish a CHGIS prefecture polygon');
   assert(
-    mockPrefNodes[0].classList.contains('is-traced') && !mockPrefNodes[1].classList.contains('is-traced'),
-    'Expected _syncTracedPrefecture to mark containing prefecture (黄州) with .is-traced'
+    !mockPrefNodes[0].classList.contains('is-traced') && !mockPrefNodes[1].classList.contains('is-traced'),
+    'With no published prefecture layer, _syncTracedPrefecture must not mark a prefecture'
   );
   ctrl.activeTrace = null;
   ctrl._syncTracedPrefecture();
@@ -1389,72 +1429,39 @@ async function runApiSearchSuite(ctx) {
     assert.strictEqual(place().dataset.caret, 'left', 'Balloon keeps the right-hand default without a city name');
   }
 
-  // CUJ 19: Complete Region/Prefecture Hydration & Transition Era Snapshots (Chu-Han, Gengshi/Chimei, Huang Chao & Late Tang Warlords)
+  // CUJ 19: Hydration still fills regions where a hand-drawn layer remains. Prefecture arrays stay empty:
+  // CHGIS commandery polygons are not published, including the Qin/Warring States copies formerly listed as regions.
   for (const [sk, snap] of Object.entries(snapshots)) {
-    if (!snap || Array.isArray(snap) || sk === 's_prc') continue;
+    if (!snap || Array.isArray(snap)) continue;
     assert(
-      Array.isArray(snap.regions) && snap.regions.length > 0,
-      `Snapshot ${sk} must have non-empty regions after _hydrateSnapshots(), got ${(snap.regions || []).length}`
+      Array.isArray(snap.prefectures) && snap.prefectures.length === 0,
+      `Snapshot ${sk} must not publish a prefecture layer, got ${(snap.prefectures || []).length}`
     );
-    const minPref =
-      sk === 's_zhanguo_a' || sk === 's_zhanguo_a2'
-        ? 3
-        : sk === 's_zhanguo_b0' || sk === 's_zhanguo_b1'
-          ? 6
-          : sk === 's_zhanguo_b' || sk === 's_zhanguo_b2'
-            ? 14
-            : 16;
-    assert(
-      Array.isArray(snap.prefectures) && snap.prefectures.length >= minPref,
-      `Snapshot ${sk} must have >= ${minPref} prefectures after _hydrateSnapshots(), got ${(snap.prefectures || []).length}`
-    );
+    assert(Array.isArray(snap.regions), `Snapshot ${sk} regions must be an array`);
+    if (sk !== 's_prc') {
+      assert(
+        Array.isArray(snap.polities) && snap.polities.length > 0,
+        `Snapshot ${sk} must keep its polity outlines`
+      );
+    }
   }
-  assert(
-    snapshots.s_zhanguo_a.prefectures.length === 3 &&
-      snapshots.s_zhanguo_a2.prefectures.length === 3 &&
-      snapshots.s_zhanguo_b0.prefectures.length === 6 &&
-      snapshots.s_zhanguo_b1.prefectures.length === 6 &&
-      snapshots.s_zhanguo_b.prefectures.length === 14 &&
-      snapshots.s_zhanguo_b2.prefectures.length === 15 &&
-      snapshots.s_zhanguo_c.prefectures.length === 20 &&
-      snapshots.s_zhanguo_c2.prefectures.length === 22 &&
-      snapshots.s_zhanguo_d.prefectures.length === 23 &&
-      snapshots.s_zhanguo_e1.prefectures.length === 24 &&
-      snapshots.s_zhanguo_e2.prefectures.length === 26 &&
-      snapshots.s_zhanguo_e4.prefectures.length === 27 &&
-      snapshots.s_zhanguo_e5.prefectures.length === 34 &&
-      snapshots.s_qin_a.prefectures.length === 36 &&
-      snapshots.s_qin_b.prefectures.length === 37 &&
-      snapshots.s_qin.prefectures.length === 41 &&
-      snapshots.s_xihan_b.prefectures.length >= 50 &&
-      snapshots.s_donghan.prefectures.length >= 48,
-    'Warring States, Qin, and Han snapshots must reflect chronological commandery (郡) progression including 薛郡'
-  );
   // Regression guard: Early Warring States (-403..-317 BCE) only has 关中（内史）, 上郡, 上党郡; later commanderies appear at historical establishment phases
   for (const earlyZgSnap of ['s_zhanguo_a', 's_zhanguo_a2']) {
     for (const laterCmd of ['汉中郡', '蜀郡', '巴郡', '渔阳郡', '上谷郡', '代郡', '河东郡', '陇西郡', '南阳郡', '太原郡']) {
       assert(
-        !snapshots[earlyZgSnap].prefectures.some((p) => p.title === laterCmd) &&
-          !snapshots[earlyZgSnap].regions.some((r) => r.title === laterCmd),
+        !snapshots[earlyZgSnap].regions.some((r) => r.title === laterCmd),
         `${earlyZgSnap} must not include post-316 BCE commandery ${laterCmd}`
       );
     }
   }
-  assert(
-    snapshots.s_zhanguo_b0.prefectures.some((p) => p.title === '汉中郡') &&
-      !snapshots.s_zhanguo_b1.prefectures.some((p) => p.title === '渔阳郡') &&
-      snapshots.s_zhanguo_b.prefectures.some((p) => p.title === '渔阳郡') &&
-      snapshots.s_zhanguo_b.prefectures.some((p) => p.title === '上谷郡') &&
-      snapshots.s_zhanguo_b.prefectures.some((p) => p.title === '代郡') &&
-      !snapshots.s_zhanguo_b.prefectures.some((p) => p.title === '河东郡') &&
-      snapshots.s_zhanguo_b2.prefectures.some((p) => p.title === '河东郡') &&
-      !snapshots.s_zhanguo_b2.prefectures.some((p) => p.title === '陇西郡') &&
-      snapshots.s_zhanguo_c.prefectures.some((p) => p.title === '陇西郡') &&
-      snapshots.s_zhanguo_c.prefectures.some((p) => p.title === '南阳郡') &&
-      !snapshots.s_zhanguo_c.prefectures.some((p) => p.title === '太原郡') &&
-      snapshots.s_zhanguo_c2.prefectures.some((p) => p.title === '太原郡'),
-    'Warring States commanderies (汉中郡 -312, 渔阳/上谷/代郡 -300, 河东郡 -286, 陇西/南阳郡 -272, 太原郡 -247) must appear strictly at their historical snapshots'
-  );
+  for (const cmdTitle of ['汉中郡', '渔阳郡', '上谷郡', '代郡', '河东郡', '陇西郡', '南阳郡', '太原郡']) {
+    for (const sk of ['s_zhanguo_b0', 's_zhanguo_b1', 's_zhanguo_b', 's_zhanguo_b2', 's_zhanguo_c', 's_zhanguo_c2']) {
+      assert(
+        !snapshots[sk].regions.some((r) => r.title === cmdTitle),
+        `${sk} must not publish CHGIS commandery ${cmdTitle} as a region`
+      );
+    }
+  }
   // Regression guard: State of Lu (鲁) survives until -250 BCE, annexed by Chu in -249 BCE, becomes Qin 薛郡 in -223 BCE
   assert(
     snapshots.s_zhanguo_a.polities.some((p) => p.title === '鲁') &&
@@ -1464,15 +1471,14 @@ async function runApiSearchSuite(ctx) {
         (pointInShape(116.99, 35.6, snapshots.s_zhanguo_c.polities.find((p) => p.title === '鲁').shape) &&
           pointInShape(116.99, 35.6, snapshots.s_zhanguo_c2.polities.find((p) => p.title === '楚').shape) &&
           pointInShape(116.99, 35.6, snapshots.s_zhanguo_e5.polities.find((p) => p.title === '秦').shape))) &&
-      snapshots.s_qin_a.prefectures.some((p) => p.title === '薛郡') &&
+      !snapshots.s_qin_a.regions.some((r) => r.title === '薛郡') &&
       loreData.PLACE_LANDMARK_EVENTS.some((ev) => ev.zh.includes('薛仁杲')) &&
       !loreData.PLACE_LANDMARK_EVENTS.some((ev) => ev.zh.includes('薛仁果')),
     'State of Lu (鲁) chronology (-403..-250 -> Chu -249 -> Qin 薛郡 -223) and 薛仁杲 spelling must hold'
   );
   for (const anachronistic of ['会稽郡', '鄣郡', '东海郡', '泗水郡']) {
     assert(
-      !snapshots.s_zhanguo_a.prefectures.some((p) => p.title === anachronistic) &&
-        !snapshots.s_zhanguo_a.regions.some((r) => r.title === anachronistic),
+      !snapshots.s_zhanguo_a.regions.some((r) => r.title === anachronistic),
       `s_zhanguo_a (-403 BCE) must not split State of Yue with post-222 BCE Qin commandery ${anachronistic}`
     );
   }
@@ -1480,20 +1486,9 @@ async function runApiSearchSuite(ctx) {
     const qSnap = snapshots[qinSnapKey];
     for (const cmdTitle of ['泗水郡', '东海郡', '鄣郡', '会稽郡']) {
       assert(
-        qSnap.prefectures.some((p) => p.title === cmdTitle) &&
-          qSnap.regions.some((r) => r.title === cmdTitle),
-        `${qinSnapKey} must include ${cmdTitle} in both prefectures and regions`
+        !qSnap.regions.some((r) => r.title === cmdTitle) && qSnap.prefectures.length === 0,
+        `${qinSnapKey} must not publish CHGIS commandery ${cmdTitle}`
       );
-    }
-    if (!FAST_MODE) {
-      for (const southTitle of ['鄣郡', '会稽郡']) {
-        const feat = qSnap.prefectures.find((p) => p.title === southTitle);
-        const maxLat = Math.max(...feat.shape.coordinates[0].map((pt) => pt[1]));
-        assert(
-          maxLat <= 32.3,
-          `${qinSnapKey} ${southTitle} must stay south of the Yangtze (maxLat <= 32.3°N), got ${maxLat}`
-        );
-      }
     }
   }
   const xihanDyn = dynasties.find((d) => d.key === 'xihan');

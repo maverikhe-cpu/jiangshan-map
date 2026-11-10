@@ -168,13 +168,8 @@ async function runSearchRuntimeSuite(ctx) {
       );
       assert.strictEqual(
         qiHits.filter((h) => h.titleZh === '齐郡').length,
-        1,
-        `"齐" search must consolidate cross-dynasty 齐郡 rows into 1 entry`
-      );
-      const qiJunHit = qiHits.find((h) => h.titleZh === '齐郡');
-      assert(
-        qiJunHit && qiJunHit.subZh && qiJunHit.subZh.startsWith('历'),
-        `Consolidated 齐郡 entry must display multi-dynasty subtitle ("历..."), got "${qiJunHit && qiJunHit.subZh}"`
+        0,
+        '"齐" search must not return a removed CHGIS 齐郡 polygon'
       );
       assert(
         qiHits.some((h) => h.bucket === 'person_era') &&
@@ -1981,40 +1976,27 @@ async function runSearchRuntimeSuite(ctx) {
         );
         grpPref.classList.remove('is-hidden');
         const expectedPrefCount = (tangSnap0.prefectures || []).length;
+        assert.strictEqual(expectedPrefCount, 0, 'Tang snapshots must not publish CHGIS prefecture polygons');
         assert(
           lazyCtrl._materializeDeferredPrefectures() === true &&
             lazyCtrl._deferredPrefectureSnap === null &&
-            grpPref.querySelectorAll('.prefecture-boundary-mesh').length === 1 &&
-            grpPref.querySelectorAll('.prefecture-shape').length === expectedPrefCount &&
-            prefPathCreates === expectedPrefCount,
-          '_materializeDeferredPrefectures must materialize 1 deduplicated .prefecture-boundary-mesh plus all prefecture hit-target paths on demand when layer becomes visible'
+            grpPref.querySelectorAll('.prefecture-boundary-mesh').length === 0 &&
+            grpPref.querySelectorAll('.prefecture-shape').length === 0 &&
+            prefPathCreates === 0,
+          'An empty prefecture layer must not create prefecture SVG paths'
         );
         const prevShapesGroup = lazyCtrl._prefShapesGroup;
         lazyCtrl._renderPolitiesAndPrefectures(tangDyn, tangSnap1);
         assert(
           lazyCtrl._prefShapesGroup === prevShapesGroup &&
-            prefPathCreates === expectedPrefCount &&
-            grpPref.querySelectorAll('.prefecture-boundary-mesh').length === 1 &&
-            grpPref.querySelectorAll('.prefecture-shape').length === expectedPrefCount,
-          `Scrubbing between intra-dynasty phases sharing snap.prefectures must reuse .prefecture-boundary-mesh + .prefecture-shape DOM without recreating ${expectedPrefCount} SVG paths (got prefPathCreates=${prefPathCreates})`
+            prefPathCreates === 0 &&
+            grpPref.querySelectorAll('.prefecture-shape').length === 0,
+          'Scrubbing with an empty prefecture layer must not create prefecture SVG paths'
         );
-
-        // 44c. Solution 1 (Issue #196): single smoothed boundary mesh deduplication, idle fill:none/stroke:none hit targets, toggleTerrainMode hides #grp-rivers, and viewportFrame camera-motion class
-        const meshEls = grpPref.querySelectorAll('.prefecture-boundary-mesh');
-        const meshD = meshEls[0].getAttribute('d') || '';
-        const rawCombinedCmds = (tangSnap0.prefectures || []).reduce((acc, p) => {
-          const pd = testProj.shapeToSvgPath(p.shape);
-          const m = pd.match(/[LQ]/g);
-          return acc + (m ? m.length : 0);
-        }, 0);
-        const meshCmds = (meshD.match(/[LQ]/g) || []).length;
-        assert(
-          meshCmds > 0 && meshCmds < rawCombinedCmds,
-          `Deduplicated .prefecture-boundary-mesh must shrink prefecture stroke commands without gaps (got meshCmds=${meshCmds} vs rawCombinedCmds=${rawCombinedCmds})`
-        );
-        assert(
-          lazyCtrl._buildPrefectureBoundaryPath(tangSnap0.prefectures) === meshD,
-          '_buildPrefectureBoundaryPath must return cached WeakMap string identically on repeat calls'
+        assert.strictEqual(
+          lazyCtrl._buildPrefectureBoundaryPath(tangSnap0.prefectures),
+          '',
+          '_buildPrefectureBoundaryPath must return an empty path when no prefectures are published'
         );
 
         const idlePrefRule = cssSrc.match(/(?:^|\n)\.prefecture-shape\s*\{([^}]+)\}/);
@@ -2217,7 +2199,7 @@ async function runSearchRuntimeSuite(ctx) {
 
             let expPol = null;
             let expReg = [];
-            let expPref = [];
+            const expPref = [];
             if (/^s_(zhanguo|qin|xihan|donghan)(_|$)/.test(sk)) expPol = '岛夷诸部';
             else if (/^s_(sanguo|xijin|dongjin|nanbei)(_|$)/.test(sk)) expPol = '夷洲';
             else if (/^s_(sui|tang|wudai|beisong|nansong)(_|$)/.test(sk)) expPol = '流求';
@@ -2227,11 +2209,9 @@ async function runSearchRuntimeSuite(ctx) {
             else if (lateMingDutchSet.has(sk) || qingDutchSet.has(sk)) expPol = '台湾（荷占）';
             else if (qingMingZhengSet.has(sk)) {
               expPol = '南明（明郑）';
-              expPref = ['承天府（东宁）'];
             } else if (qingRuleSet.has(sk)) {
               expPol = '清';
               expReg = ['台湾'];
-              expPref = ['台湾府'];
             } else if (jpOccSet.has(sk)) {
               expPol = '台湾（日占）';
             } else if (rocPost45Set.has(sk)) {
@@ -2277,8 +2257,8 @@ async function runSearchRuntimeSuite(ctx) {
           [1603, '东番', null, 'Dongfan', '東番'],
           [1630, '台湾（荷占）', null, 'Taiwan (Dutch-ruled)', '臺灣（荷佔）'],
           [1650, '台湾（荷占）', null, 'Taiwan (Dutch-ruled)', '臺灣（荷佔）'],
-          [1670, '南明（明郑）', '承天府（东宁）(府)', 'Southern Ming (Koxinga / Tungning)', '南明（明鄭）'],
-          [1750, '清', '台湾府', 'Qing', '清'],
+          [1670, '南明（明郑）', null, 'Southern Ming (Koxinga / Tungning)', '南明（明鄭）'],
+          [1750, '清', null, 'Qing', '清'],
           [1900, '台湾（日占）', null, 'Taiwan (Japanese-occupied)', '臺灣（日佔）'],
           [1920, '台湾（日占）', null, 'Taiwan (Japanese-occupied)', '臺灣（日佔）'],
           [1947, '中华民国', null, 'Republic of China', '中華民國'],

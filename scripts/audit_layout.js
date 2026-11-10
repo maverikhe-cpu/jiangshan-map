@@ -56,13 +56,43 @@ function findChromeBinary() {
     '/Applications/Chromium.app/Contents/MacOS/Chromium'
   );
   for (const c of candidates) {
-    if (c && fs.existsSync(c)) {
-      try {
-        fs.accessSync(c, fs.constants.X_OK);
-        return c;
-      } catch (_) {}
-    }
+    const elf = resolveChromeElf(c);
+    if (elf) return elf;
   }
+  return null;
+}
+
+function isElfExecutable(bin) {
+  let fd;
+  try {
+    fd = fs.openSync(bin, 'r');
+    const buf = Buffer.alloc(4);
+    if (fs.readSync(fd, buf, 0, 4, 0) < 4) return false;
+    return buf[0] === 0x7f && buf.toString('utf8', 1, 4) === 'ELF';
+  } catch (_) {
+    return false;
+  } finally {
+    if (fd !== undefined) fs.closeSync(fd);
+  }
+}
+
+// Shell wrappers around Chrome redirect stdio through `cat`. A large --dump-dom
+// then fills the pipe and never exits. Use the ELF beside the wrapper.
+function resolveChromeElf(bin) {
+  if (!bin || !fs.existsSync(bin)) return null;
+  try {
+    fs.accessSync(bin, fs.constants.X_OK);
+  } catch (_) {
+    return null;
+  }
+  if (isElfExecutable(bin)) return bin;
+  try {
+    const sibling = path.join(path.dirname(fs.realpathSync(bin)), 'chrome');
+    if (sibling !== bin && fs.existsSync(sibling) && isElfExecutable(sibling)) {
+      fs.accessSync(sibling, fs.constants.X_OK);
+      return sibling;
+    }
+  } catch (_) {}
   return null;
 }
 
@@ -148,6 +178,7 @@ function createProbeHtml(rootDir) {
   const indexHtml = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
   const htmlLocal = indexHtml
     .replace(/<link[^>]+https?:\/\/[^>]+>\s*/g, '')
+    .replace(/<script\b[^>]*\bsrc="https?:\/\/[^"]+"[^>]*>\s*<\/script>\s*/g, '')
     .replace(/(<img[^>]+)\bsrc="https?:\/\/[^"]+"/g, `$1src="${TRANSPARENT_GIF}"`)
     .replace(
       /(<script\b[^>]*\bsrc="js\/app\.js)/,
@@ -185,6 +216,7 @@ function runViewportProbe(chromeBin, tmpHtmlPath, width, height) {
         `--user-data-dir=${userDataDir}`,
         `--window-size=${width},${height}`,
         '--virtual-time-budget=1500',
+        '--timeout=20000',
         '--dump-dom',
         `file://${tmpHtmlPath}?audit_w=${width}&audit_h=${height}`,
       ],

@@ -2021,10 +2021,11 @@ async function runCartographyUiSuite(ctx) {
 
     // 1. 秦初三十六郡 (-221..-215 BCE): 南海郡 not yet founded; 番禺 & 桂林 in 南越; 肤施 & 陇西 in 秦; 九原 in 匈奴
     assert(
-      !snapshots.s_qin_a.prefectures.some((p) => p.title === '南海郡') &&
-        !snapshots.s_qin_b.prefectures.some((p) => p.title === '南海郡') &&
-        snapshots.s_qin.prefectures.some((p) => p.title === '南海郡'),
-      '南海郡 must only appear in s_qin (-214 BCE) after Qin conquers Lingnan, restoring 36 commanderies in s_qin_a'
+      snapshots.s_qin_a.prefectures.length === 0 &&
+        snapshots.s_qin_b.prefectures.length === 0 &&
+        snapshots.s_qin.prefectures.length === 0 &&
+        !snapshots.s_qin.regions.some((r) => r.title === '南海郡'),
+      '南海郡 polygons are CHGIS and are not published; Lingnan is checked on the polity outline below'
     );
     assert(
       hasPt('s_qin_a', '南越', 113.261, 23.131) &&
@@ -2298,10 +2299,9 @@ async function runCartographyUiSuite(ctx) {
           hasPolPt(sk, '元', 89.53, 42.85) &&
           !hasPolPt(sk, '察合台汗国', 89.181, 44.001) &&
           !hasPolPt(sk, '察合台汗国', 89.53, 42.85) &&
-          hasRegPt(sk, '北庭都护府', 89.181, 44.001) &&
-          hasRegPt(sk, '北庭都护府', 89.53, 42.85) &&
+          !(snapshots[sk].regions || []).some((r) => r.title === '北庭都护府') &&
           hasRegPt(sk, '征东行省', 126.55, 37.97),
-        `${sk} must place Beshbalik and Qocho inside Yuan / Beiting Protectorate and Kaesong inside Zhengdong Province`
+        `${sk} must place Beshbalik and Qocho inside Yuan, omit the removed CHGIS Beiting copy, and keep Kaesong inside Zhengdong Province`
       );
     }
 
@@ -2323,28 +2323,9 @@ async function runCartographyUiSuite(ctx) {
       );
     }
 
-    // 3. Circuit (路) chronology between s_yuan_a (1279–1288) and s_yuan (1288–1351) + restored frontier circuits
     assert(
-      hasPrefPt('s_yuan_a', '安西路', 108.941, 34.341) &&
-        hasPrefPt('s_yuan_a', '鄂州路', 114.311, 30.551) &&
-        hasPrefPt('s_yuan_a', '太原路', 112.551, 37.871) &&
-        hasPrefPt('s_yuan_a', '建康路', 118.801, 32.061) &&
-        hasPrefPt('s_yuan_a', '潭州路', 112.971, 28.201) &&
-        hasPrefPt('s_yuan_a', '南剑路', 118.18, 26.64) &&
-        hasPrefPt('s_yuan', '奉元路', 108.941, 34.341) &&
-        hasPrefPt('s_yuan', '武昌路', 114.311, 30.551) &&
-        hasPrefPt('s_yuan', '冀宁路', 112.551, 37.871) &&
-        hasPrefPt('s_yuan', '集庆路', 118.801, 32.061) &&
-        hasPrefPt('s_yuan', '天临路', 112.971, 28.201) &&
-        hasPrefPt('s_yuan', '延平路', 118.18, 26.64) &&
-        hasPrefPt('s_yuan', '辽阳路', 123.241, 41.271) &&
-        hasPrefPt('s_yuan', '大宁路', 121.13, 41.1) &&
-        hasPrefPt('s_yuan', '和林路', 102.851, 47.201) &&
-        hasPrefPt('s_yuan', '亦集乃路', 101.14, 41.76) &&
-        hasPrefPt('s_yuan', '播州宣慰司', 106.93, 27.72) &&
-        hasPrefPt('s_yuan', '泉州路', 118.681, 24.871) &&
-        hasPrefPt('s_yuan', '汀州路', 117.02, 25.08),
-      's_yuan_a and s_yuan prefectures must reflect pre-1301 vs post-1301 circuit renamings and cover frontier circuits'
+      snapshots.s_yuan_a.prefectures.length === 0 && snapshots.s_yuan.prefectures.length === 0,
+      'Yuan circuit polygons from CHGIS are not published'
     );
 
     // 4. Late Yuan Red Turban & warlord territories in s_yuan_b (1351–1363) and s_yuan_c (1363–1368)
@@ -2525,13 +2506,10 @@ async function runCartographyUiSuite(ctx) {
       );
     }
     for (const sk of ['s_beisong_a0', 's_beisong_a', 's_beisong_a2', 's_beisong_a3', 's_beisong_a4', 's_beisong_a5', 's_beisong_b0', 's_beisong_b', 's_beisong_b1', 's_beisong_b2', 's_beisong_c', 's_beisong_d', 's_nansong_a0', 's_nansong_a', 's_nansong_b0', 's_nansong_c', 's_nansong_d', 's_nansong_e', 's_nansong_b', 's_nansong_g']) {
-      const prefs = snapshots[sk].prefectures || [];
-      assert(
-        prefs.length >= 130 &&
-          !prefs.some((p) => p.title.endsWith('道') || p.title === '倒塌岭节度使司' || p.title === '西北路') &&
-          hasPrefPt(sk, '开封府', 114.351, 34.791) &&
-          hasPrefPt(sk, '成都府', 104.061, 30.671),
-        `${sk} prefectures must be populated (>=130), free of macro-circuits, and include Kaifengfu & Chengdufu`
+      assert.strictEqual(
+        (snapshots[sk].prefectures || []).length,
+        0,
+        `${sk} must not publish CHGIS prefecture polygons`
       );
     }
 
@@ -2555,8 +2533,8 @@ async function runCartographyUiSuite(ctx) {
         hasRegPt('s_nansong_a0', '利州路', 105.721, 34.581) &&
         snapshots.s_nansong_a0.regions.some((r) => r.title === '燕京路') &&
         !snapshots.s_nansong_a0.regions.some((r) => r.title === '中都路') &&
-        hasPrefPt('s_nansong_a0', '析津府', 116.401, 39.901),
-      's_nansong_a0 (1127–1141, pre-Shaoxing Treaty & pre-1153 Zhongdu) must keep Qinzhou in Southern Song / Lizhou Circuit and name Beijing as Yanjing Circuit / Xijinfu'
+        snapshots.s_nansong_a0.prefectures.length === 0,
+      's_nansong_a0 (1127–1141) must keep Qinzhou in Southern Song / Lizhou Circuit and name Beijing as Yanjing Circuit; CHGIS prefectures such as Xijinfu are not published'
     );
     for (const [sk, northPol] of [
       ['s_nansong_a', '金'],
@@ -2650,10 +2628,8 @@ async function runCartographyUiSuite(ctx) {
           hasRegPt(sk, '上京路', 136.0, 48.8) &&
           hasRegPt(sk, '上京路', 126.5, 54.0) &&
           hasRegPt(sk, '上京路', 122.0, 50.5) &&
-          hasPrefPt(sk, '蒲与路', 126.5, 54.0) &&
-          hasPrefPt(sk, '胡里改路', 136.0, 48.8) &&
-          hasPrefPt(sk, '恤品路', 133.5, 44.8),
-        `${sk} must extend Jin (上京路, 蒲与路, 胡里改路, 恤品路) across the Amur and Ussuri rivers and follow the historical Jin Frontier Trench in the west rather than modern borders`
+          (snapshots[sk].prefectures || []).length === 0,
+        `${sk} must extend Jin (上京路) across the Amur and Ussuri rivers; CHGIS route polygons are not published`
       );
     }
 

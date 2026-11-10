@@ -1,4 +1,10 @@
 {
+  "nankai-archives": { "zh": "南开大学档案馆《抗战时期的南开记忆》", "en": "Nankai University Archives, Nankai in the War of Resistance", "kind": "web", "url": "https://archives.nankai.edu.cn/info/1146/1850.htm" },
+  "nankai-news": { "zh": "南开新闻网《历史上的今天：西南联大》", "en": "Nankai News, Southwest Associated University", "kind": "web", "url": "https://news.nankai.edu.cn/zhxw/system/2007/04/04/000005672.shtml" },
+  "pku-archives": { "zh": "北京大学档案馆：1938年4月2日长沙临时大学改称西南联合大学", "en": "Peking University Archives, 2 April 1938 rename", "kind": "web", "url": "https://www.dag.pku.edu.cn/details/272.html" },
   "songshi": { "zh": "脱脱等《宋史》", "en": "Tuotuo et al., History of Song (Song Shi)", "kind": "primary", "url": "https://zh.wikisource.org/wiki/宋史" },
+  "tsinghua-alumni": { "zh": "清华校友总会《教育史上的长征——湘黔滇旅行团》", "en": "Tsinghua Alumni Association, the Hunan–Guizhou–Yunnan walking group", "kind": "web", "url": "https://www.tsinghua.org.cn/info/1952/16992.htm" },
+  "tsinghua-xsg": { "zh": "清华大学校史馆《1937长沙：西南联大由此开端》", "en": "Tsinghua University History Museum, Changsha 1937", "kind": "web", "url": "https://xsg.tsinghua.edu.cn/info/1003/3605.htm" },
+  "ynnu-bwg": { "zh": "云南师范大学西南联大博物馆《西南联大西迁》", "en": "Southwest Associated University Museum, Yunnan Normal University", "kind": "web", "url": "https://bwg.ynnu.edu.cn/info/1029/1167.htm" },
   "zztj": { "zh": "司马光《资治通鉴》", "en": "Sima Guang, Zizhi Tongjian", "kind": "primary", "url": "https://zh.wikisource.org/wiki/資治通鑑" }
 }
