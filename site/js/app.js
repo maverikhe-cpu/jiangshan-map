@@ -1393,11 +1393,9 @@
         if (!dynasty || !Array.isArray(coord) || !this.snapshots) return null;
         const snap = this.snapshots[this._resolveSnapKey(dynasty, yr)];
         if (!snap) return null;
-        let polity = this._polityAt(coord[0], coord[1], snap);
-        if (!polity || polity.role === 'neighbor') {
-          polity = this._nearestMainPolity(coord, snap) || polity;
-        }
-        track = polity && tracks.find((t) => t.polities.includes(polity.title) && yr >= t.spans[0][0] && yr <= t.until);
+        const polity = this._polityAt(coord[0], coord[1], snap);
+        if (!polity || !polity.shape || polity.role === 'neighbor') return null;
+        track = tracks.find((t) => t.polities.includes(polity.title) && yr >= t.spans[0][0] && yr <= t.until);
       }
       if (!track || yr < track.spans[0][0] || yr > track.until) return null;
       let match = null;
@@ -1490,9 +1488,26 @@
      * (Zizhi Tongjian convention); with `coord` (or an explicit `regime`) it uses the
      * era of the regime that ruled that place, when it has a REGIONAL_ERA_TRACKS entry.
      */
+    _eraPolityAt(yr, dynasty, coord) {
+      if (!dynasty || !Array.isArray(coord) || !this.snapshots) return null;
+      const snap = this.snapshots[this._resolveSnapKey(dynasty, yr)];
+      if (!snap) return null;
+      const polity = this._polityAt(coord[0], coord[1], snap);
+      if (!polity || !polity.shape) return null;
+      return polity;
+    }
+
     formatEraLabel(y, dynasty, coord = null, regime = null) {
       const yr = Math.round(y);
-      const regional = coord || regime ? this._resolveRegionalEraSpan(yr, dynasty, coord, regime) : null;
+      const placeAsked = !regime && Array.isArray(coord) && coord.length >= 2;
+      let located = null;
+      if (placeAsked) {
+        located = this._eraPolityAt(yr, dynasty, coord);
+        if (!located || located.role === 'neighbor') {
+          return this.locale === 'en' ? 'Gregorian (local era not located)' : this._zh('公历（未标当地年号）');
+        }
+      }
+      const regional = regime || placeAsked ? this._resolveRegionalEraSpan(yr, dynasty, placeAsked ? coord : null, regime) : null;
       if (this.locale === 'en') {
         let dynName = dynasty ? this.dynastyName(dynasty) : '';
         if (yr >= 1912) return dynName;
@@ -1874,14 +1889,15 @@
         prefChk.disabled = true;
         if (this.grpPrefectures) this.grpPrefectures.classList.add('is-hidden');
       }
-      const editionNote = this._id('edition-note');
-      if (editionNote) {
-        editionNote.textContent = upstreamBasemap
-          ? this._editionNoteText()
-          : this.uiStr(
-              'edition_note',
-              '本发行版暂缺历史边界。岸线与主要河流是 Natural Earth 1:50m 现代自然地理，供定位，不是历史边界。'
-            );
+      if (upstreamBasemap) this._syncEditionNote();
+      else {
+        const editionNote = this._id('edition-note-text') || this._id('edition-note');
+        if (editionNote) {
+          editionNote.textContent = this.uiStr(
+            'edition_note',
+            '本发行版暂缺历史边界。岸线与主要河流是 Natural Earth 1:50m 现代自然地理，供定位，不是历史边界。'
+          );
+        }
       }
       this._id('lbl-settlements').textContent = this.uiStr('toggle_cities', '古地名');
       const lblCorridors = this._id('lbl-corridors');
@@ -1981,13 +1997,12 @@
       );
       this._id('txt-seat-label').textContent = this.uiStr('capital_k', '都城');
       this._id('txt-milestones-heading').textContent = this.uiStr('events_h', '重大事件');
-      this._id('txt-disclaimer').textContent =
-        window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap
-          ? this._editionNoteText()
-          : this.uiStr(
-              'caveat',
-              '本发行版暂缺历史边界。岸线与主要河流是 Natural Earth 1:50m 现代自然地理，供定位，不是历史边界。'
-            );
+      if (!(window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap)) {
+        this._id('txt-disclaimer').textContent = this.uiStr(
+          'caveat',
+          '本发行版暂缺历史边界。岸线与主要河流是 Natural Earth 1:50m 现代自然地理，供定位，不是历史边界。'
+        );
+      }
       this._id('txt-year-suffix').textContent = this.uiStr('year_unit', '年');
       const stepPrevBtn = this._id('act-step-prev');
       if (stepPrevBtn) {
@@ -2287,32 +2302,92 @@
       if (!this.terrainReliefPublished && this.svg) this.svg.classList.remove('terrain-active');
     }
 
-    _historicalSlice(year) {
+    _formatMapYear(year) {
+      if (this.locale === 'en') return year < 0 ? `${Math.abs(year)} BCE` : `${year} CE`;
+      return year < 0 ? `前${Math.abs(year)}年` : `${year}年`;
+    }
+
+    _exactHistoricalSlice(year) {
       const slices = (window.HISTORICAL_BASEMAP && window.HISTORICAL_BASEMAP.slices) || [];
-      let chosen = null;
       for (const slice of slices) {
-        if (slice.year <= year && (!chosen || slice.year > chosen.year)) chosen = slice;
+        if (slice.year === year) return slice;
       }
-      return chosen;
+      return null;
+    }
+
+    _sliceForEventYear(year) {
+      const slice = this._exactHistoricalSlice(year);
+      return slice ? { slice, mode: 'exact' } : { slice: null, mode: 'none' };
+    }
+
+    _displayedHistoricalSlice() {
+      if (this._referenceMapYear != null && this._referenceMapYear !== this.year) {
+        const slice = this._exactHistoricalSlice(this._referenceMapYear);
+        if (slice) return { slice, mode: 'reference' };
+      }
+      return this._sliceForEventYear(this.year);
     }
 
     _editionNoteText() {
-      const year = this._historicalSliceYear;
       const loaded = Boolean(window.HISTORICAL_BASEMAP);
-      if (this.locale === 'en') {
-        const when = !loaded
-          ? 'The upstream slice is still loading.'
-          : year == null
-            ? 'No upstream slice covers this year.'
-            : `The slice on screen is ${year < 0 ? Math.abs(year) + ' BCE' : year + ' CE'}.`;
-        return `Colored realms are historical-basemaps (GPL-3.0, André Ourednik). ${when} They are a continental sketch, not this snapshot's detailed borders. Prefectures are not in this edition. The coast and rivers are Natural Earth 1:50m, not a historical border.`;
+      const eventYear = this._formatMapYear(this.year);
+      if (!loaded) {
+        return this.locale === 'en'
+          ? 'The upstream territory file is still loading. The coast and rivers are Natural Earth, for orientation.'
+          : '上游疆域图仍在载入。岸线和河流是 Natural Earth，只供定位。';
       }
-      const when = !loaded
-        ? '上游图幅仍在载入。'
-        : year == null
-          ? '这一年没有可显示的上游图幅。'
-          : `画面使用的是${year < 0 ? '前' + Math.abs(year) : year}年上游整幅。`;
-      return `着色疆域来自 historical-basemaps（GPL-3.0，André Ourednik）。${when}这是大陆尺度示意，不是本快照的细部疆界。郡州府边界本发行版暂缺。岸线与河流是 Natural Earth 1:50m，不是历史边界。`;
+      const shown = this._displayedHistoricalSlice();
+      if (shown.mode === 'reference') {
+        const mapYear = this._formatMapYear(shown.slice.year);
+        return this.locale === 'en'
+          ? `Reference map: the ${mapYear} upstream sheet. The event year is ${eventYear}. This reference map is not the event year's territory.`
+          : `参考图：${mapYear}上游整幅。事件年是${eventYear}。这张参考图不是事件年的疆域。`;
+      }
+      if (shown.mode === 'exact') {
+        const warlord = (shown.slice.features || []).some((feature) => /chinese warlords/i.test(feature.name));
+        if (this.locale === 'en') {
+          const extra = warlord
+            ? ' The upstream sheet names the Chinese area “Chinese warlords”. That is a continental sketch, not a Republic of China border or control line.'
+            : ' It is that year\'s continental sketch, not a detailed border.';
+          return `The territory sheet and the event year are both ${eventYear}.${extra} Prefectures are not in this edition. The coast and rivers are Natural Earth, not a historical border.`;
+        }
+        const extra = warlord
+          ? '上游把中国本部写作 Chinese warlords（军阀割据）。这是大陆尺度示意，不是中华民国国界或控制线。'
+          : '这是该年上游原图的大陆尺度示意，不是细部国界。';
+        return `疆域图与事件年同为${eventYear}。${extra}郡州府暂缺。岸线和河流是 Natural Earth，不是历史边界。`;
+      }
+      return this.locale === 'en'
+        ? `Event year ${eventYear} has no matching upstream territory sheet, so no historical border is drawn. The coast and rivers are Natural Earth, for orientation only. Prefectures are not in this edition.`
+        : `事件年${eventYear}没有与之相符的上游疆域图，所以不画历史边界。岸线和河流是 Natural Earth，只供定位。郡州府暂缺。`;
+    }
+
+    _syncEditionNote() {
+      const text = this._editionNoteText();
+      const note = this._id('edition-note');
+      const span = this._id('edition-note-text');
+      const shown = window.HISTORICAL_BASEMAP ? this._displayedHistoricalSlice() : { mode: 'none' };
+      if (span) span.textContent = text;
+      else if (note) note.textContent = text;
+      if (note && note.classList) {
+        note.classList.toggle('is-reference', shown.mode === 'reference');
+        note.classList.toggle('is-exact', shown.mode === 'exact');
+        note.classList.toggle('is-unmatched', shown.mode !== 'exact' && shown.mode !== 'reference');
+      }
+      const disclaimer = this._id('txt-disclaimer');
+      if (disclaimer) disclaimer.textContent = text;
+    }
+
+    _fillHistoricalRefSelect() {
+      const select = this._id('historical-ref-year');
+      if (!select || select.dataset.filled === '1' || !window.HISTORICAL_BASEMAP) return;
+      const slices = window.HISTORICAL_BASEMAP.slices || [];
+      for (const slice of slices) {
+        const option = document.createElement('option');
+        option.value = String(slice.year);
+        option.textContent = slice.year < 0 ? `前${Math.abs(slice.year)}年` : `${slice.year}年`;
+        select.appendChild(option);
+      }
+      select.dataset.filled = '1';
     }
 
     _historicalColor(name) {
@@ -2399,12 +2474,14 @@
 
     _renderHistoricalBasemap() {
       if (!this.grpHistorical || !this.projector) return;
-      const slice = this._historicalSlice(this.year);
+      const shown = this._displayedHistoricalSlice();
+      const slice = shown.slice;
       this._historicalSliceYear = slice ? slice.year : null;
-      const token = `${slice ? slice.year : 'none'}:${this.locale || 'zh'}`;
+      const token = `${shown.mode}:${slice ? slice.year : 'none'}:${this.locale || 'zh'}`;
       const checked = this._id('chk-polities');
       this.grpHistorical.classList.toggle('is-hidden', Boolean(checked && !checked.checked));
-      if (this._historicalDrawnToken === token && this.grpHistorical.childElementCount) return;
+      this.grpHistorical.classList.toggle('is-reference-layer', shown.mode === 'reference');
+      if (this._historicalDrawnToken === token && (shown.mode === 'none' || this.grpHistorical.childElementCount)) return;
       this._historicalDrawnToken = token;
       this.grpHistorical.innerHTML = '';
       if (!slice) return;
@@ -2436,7 +2513,7 @@
 
     _appendUpstreamLegend(grid) {
       if (!window.HISTORICAL_BASEMAP || !grid) return;
-      const slice = this._historicalSlice(this.year);
+      const slice = this._displayedHistoricalSlice().slice;
       if (!slice) return;
       const ranked = slice.features
         .map((feature) => ({
@@ -2468,6 +2545,7 @@
 
     _ensureHistoricalBasemap() {
       if (window.HISTORICAL_BASEMAP) {
+        this._fillHistoricalRefSelect();
         this._renderHistoricalBasemap();
         return Promise.resolve();
       }
@@ -2476,16 +2554,10 @@
           this._lazyAssetUrl('js/historical_basemap.js', 'vHistorical')
         ).then(() => {
           this._historicalDrawnToken = null;
+          this._fillHistoricalRefSelect();
           this._renderHistoricalBasemap();
           if (this.lastRenderedSnap) this._renderLegendBox(this.lastRenderedSnap);
-          const editionNote = this._id('edition-note');
-          if (editionNote && window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap) {
-            editionNote.textContent = this._editionNoteText();
-          }
-          const disclaimer = this._id('txt-disclaimer');
-          if (disclaimer && window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap) {
-            disclaimer.textContent = this._editionNoteText();
-          }
+          if (window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap) this._syncEditionNote();
         });
       }
       return this._historicalPromise;
@@ -5898,12 +5970,20 @@
       if (this._historicalBoundariesWithheld()) {
         const withheld = document.createElement('div');
         withheld.className = 'key-note';
-        withheld.textContent =
-          window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap
+        const shown = window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap ? this._displayedHistoricalSlice() : null;
+        withheld.textContent = shown
+          ? shown.mode === 'reference'
             ? this.locale === 'en'
-              ? 'Fine atlas borders and prefectures are not in this edition'
-              : '细部疆界与郡州府暂缺'
-            : this.uiStr('boundary_withheld', '本发行版暂缺边界');
+              ? 'Reference map, not the event year'
+              : '参考图，不是事件年疆域'
+            : shown.mode === 'exact'
+              ? this.locale === 'en'
+                ? 'Same year as the event. Prefectures are not in this edition'
+                : '与事件年相同的上游图。郡州府暂缺'
+              : this.locale === 'en'
+                ? 'No territory map matches this event year'
+                : '本年无匹配疆域'
+          : this.uiStr('boundary_withheld', '本发行版暂缺边界');
         this.mapKey.appendChild(withheld);
       }
       const grid = document.createElement('div');
@@ -6993,6 +7073,12 @@
     jumpToYear(targetYear) {
       let y = Math.max(this.minYear, Math.min(this.maxYear, Math.round(targetYear)));
       if (y === 0) y = this.year < 0 ? 1 : -1;
+      if (y !== this.year && this._referenceMapYear != null) {
+        this._referenceMapYear = null;
+        this._historicalDrawnToken = null;
+        const refSelect = this._id('historical-ref-year');
+        if (refSelect) refSelect.value = '';
+      }
       const prevIdx = this.dynastyIdx;
       this.year = y;
       this._scheduleUrlSync();
@@ -7002,10 +7088,7 @@
 
       this._runWithDeferredTypography(() => {
         this._renderHistoricalBasemap();
-        const editionNote = this._id('edition-note');
-        if (editionNote && window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap) {
-          editionNote.textContent = this._editionNoteText();
-        }
+        if (window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap) this._syncEditionNote();
         if (prevIdx !== this.dynastyIdx || !this.grpSettlements.firstChild) {
           if (prevIdx !== this.dynastyIdx) {
             this._clearQuickSearchInput();
@@ -9679,6 +9762,18 @@
       }
       if (this._id('chk-provinces')) bindToggle('chk-provinces', this.grpProvinces);
       if (this._id('chk-prov-names')) bindToggle('chk-prov-names', this.grpProvNames);
+      const refSelect = this._id('historical-ref-year');
+      if (refSelect) {
+        refSelect.addEventListener('change', () => {
+          const value = refSelect.value;
+          this._referenceMapYear = value === '' ? null : Number(value);
+          if (this._referenceMapYear === this.year) this._referenceMapYear = null;
+          this._historicalDrawnToken = null;
+          this._renderHistoricalBasemap();
+          this._syncEditionNote();
+          if (this.lastRenderedSnap) this._renderLegendBox(this.lastRenderedSnap);
+        });
+      }
       this._id('chk-polities').addEventListener('change', (e) => {
         this.grpPolities.classList.toggle('is-hidden', !e.target.checked);
         if (this.grpHistorical) this.grpHistorical.classList.toggle('is-hidden', !e.target.checked);

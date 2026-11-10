@@ -1249,21 +1249,21 @@ async function runCartographyUiSuite(ctx) {
       }
     }
 
-    // Without published polygons, a milestone coord cannot select a regional calendar, so the phase calendar is used.
+    // A place with no published polygon must not inherit another regime's era name.
     for (const [k, y, kw, expected] of [
-      ['nanbei', 523, '六镇之乱', '南朝梁武帝·普通四年'],
-      ['sanguo', 221, '刘备在成都称帝', '魏文帝·黄初二年'],
-      ['sanguo', 222, '夷陵之战', '魏文帝·黄初三年'],
-      ['nanbei', 479, '萧道成', '南朝齐高帝·建元元年'],
-      ['nanbei', 553, '尉迟迥', '南朝梁元帝·承圣二年'],
+      ['nanbei', 523, '六镇之乱', '公历（未标当地年号）'],
+      ['sanguo', 221, '刘备在成都称帝', '公历（未标当地年号）'],
+      ['sanguo', 222, '夷陵之战', '公历（未标当地年号）'],
+      ['nanbei', 479, '萧道成', '公历（未标当地年号）'],
+      ['nanbei', 553, '尉迟迥', '公历（未标当地年号）'],
       ['nanbei', 546, '玉壁之战', '西魏文帝·大统十二年'],
-      ['wudai', 916, '耶律阿保机', '后梁末帝·贞明二年'],
-      ['beisong', 1038, '元昊', '北宋仁宗·宝元元年'],
-      ['beisong', 1115, '完颜阿骨打', '北宋徽宗·政和五年'],
-      ['beisong', 1104, '河湟开边', '北宋徽宗·崇宁三年'],
+      ['wudai', 916, '耶律阿保机', '公历（未标当地年号）'],
+      ['beisong', 1038, '元昊', '公历（未标当地年号）'],
+      ['beisong', 1115, '完颜阿骨打', '公历（未标当地年号）'],
+      ['beisong', 1104, '河湟开边', '公历（未标当地年号）'],
       ['nansong', 1127, '赵构即位', '南宋高宗·建炎元年'],
       ['nansong', 1141, '绍兴和议', '南宋高宗·绍兴十一年'],
-      ['nansong', 1275, '马可·波罗', '南宋恭帝·德祐元年'],
+      ['nansong', 1275, '马可·波罗', '公历（未标当地年号）'],
     ]) {
       assert.strictEqual(ctrl._eventEraLabel(dynByKey(k), milestoneOf(k, y, kw)), expected, `${k} ${y} ${kw}`);
     }
@@ -1292,13 +1292,30 @@ async function runCartographyUiSuite(ctx) {
 
     const frontier = loreData.PLACE_LANDMARK_EVENTS.find((lm) => lm.year === 523 && (lm.zh || '').includes('六镇乱起'));
     assert(frontier, 'Missing 523 Six Garrisons landmark event');
-    assert.strictEqual(ctrl.formatEraLabel(523, nanbei, frontier.coord), '南朝梁武帝·普通四年');
-    assert.strictEqual(ctrl.inspect({ year: 523, lng: 109.5, lat: 40.95 }).era, '南朝梁武帝·普通四年');
+    assert.strictEqual(ctrl.formatEraLabel(523, nanbei, frontier.coord), '公历（未标当地年号）');
+    assert.strictEqual(ctrl.inspect({ year: 523, lng: 109.5, lat: 40.95 }).era, '公历（未标当地年号）');
+    assert.strictEqual(ctrl._sliceForEventYear(-221).mode, 'none', '221 BCE must not borrow the 300 BCE sheet');
+    assert.strictEqual(ctrl._sliceForEventYear(741).mode, 'none', '741 must not borrow the 700 sheet');
+    assert.strictEqual(ctrl._sliceForEventYear(1937).mode, 'none', '1937 has no exact upstream sheet');
+    assert.strictEqual(ctrl._sliceForEventYear(1938).mode, 'exact');
+    assert.strictEqual(ctrl._sliceForEventYear(1938).slice.year, 1938);
+    assert.strictEqual(ctrl._exactHistoricalSlice(-300).year, -300);
+    ctrl.year = -221;
+    ctrl._referenceMapYear = -300;
+    assert.strictEqual(ctrl._displayedHistoricalSlice().mode, 'reference');
+    assert.strictEqual(ctrl._displayedHistoricalSlice().slice.year, -300);
+    assert(
+      ctrl._editionNoteText().includes('参考图') && ctrl._editionNoteText().includes('不是事件年的疆域'),
+      'A reference sheet must stay labeled as not the event year'
+    );
+    ctrl._referenceMapYear = null;
+    assert.strictEqual(ctrl._displayedHistoricalSlice().mode, 'none');
+    assert(ctrl._editionNoteText().includes('没有与之相符'), 'An unmatched year must say so');
 
     ctrl.locale = 'en';
-    assert(
-      ctrl.formatEraLabel(523, nanbei, [109.5, 40.95]).endsWith('Emp. Wu of Liang'),
-      'English era label must name the regime ruling the location'
+    assert.strictEqual(
+      ctrl.formatEraLabel(523, nanbei, [109.5, 40.95]),
+      'Gregorian (local era not located)'
     );
     ctrl.locale = 'zh';
   }
@@ -2209,7 +2226,7 @@ async function runCartographyUiSuite(ctx) {
     const tangInsp = ctrl.inspect({ year: 741, place: '長安' });
     assert(
       tangInsp &&
-        tangInsp.era === '唐玄宗·開元二十九年' &&
+        tangInsp.era === '公曆（未標當地年號）' &&
         tangInsp.dynasty.title === '唐' &&
         tangInsp.resolvedName === '長安' &&
         tangInsp.polity === null &&

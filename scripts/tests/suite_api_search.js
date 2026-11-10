@@ -38,7 +38,7 @@ async function runApiSearchSuite(ctx) {
   const languan819 = ctrl.inspect({ year: 819, place: '蓝关' });
   assert.strictEqual(languan819.year, 819);
   assert.strictEqual(languan819.polity, null);
-  assert(languan819.era.includes('元和十四年'), `Expected 元和十四年 for 819 CE, got ${languan819.era}`);
+  assert.strictEqual(languan819.era, '公历（未标当地年号）', `A place with no polygon must not inherit the phase era, got ${languan819.era}`);
   assert(
     Math.hypot(languan819.coord[0] - 109.52, languan819.coord[1] - 34.03) < 0.2,
     `Expected 蓝关 near [109.52, 34.03], got ${JSON.stringify(languan819.coord)}`

@@ -276,7 +276,7 @@ hit.prefecture;                  // 恆為 null：本發行版不含郡州府多
 | :-- | :-- | :-- |
 | 程式碼（頁面、腳本、CLI、MCP 服務） | 本專案 | GPL-3.0 |
 | 本倉庫改過的政權輪廓（`data/atlas`） | 以 [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps) 為起點，隨後在本倉庫裡改過。沒有逐條來源。有的環與 CHGIS 相同。相似比例不是許可判斷 | **這些改過的座標不進入公開包。** 不稱為手繪 |
-| 上游 historical-basemaps 整幅 | André Ourednik，提交 `4b5039e50d8d2464b065bd76ad6086cd4597108d`，GPL-3.0。作者在被問到資料許可的 [issue #3](https://github.com/aourednik/historical-basemaps/issues/3) 中加入 LICENSE。[issue #74](https://github.com/aourednik/historical-basemaps/issues/74) 沒有維護者答覆，不取消該許可證。見 `docs/historical-basemaps-license.md` | **公開為 `js/historical_basemap.js`。** 查看某年時用不超過該年的最近一張上游圖。郡州府仍不發布 |
+| 上游 historical-basemaps 整幅 | André Ourednik，提交 `4b5039e50d8d2464b065bd76ad6086cd4597108d`，GPL-3.0。作者在被問到資料許可的 [issue #3](https://github.com/aourednik/historical-basemaps/issues/3) 中加入 LICENSE。[issue #74](https://github.com/aourednik/historical-basemaps/issues/74) 沒有維護者答覆，不取消該許可證。見 `docs/historical-basemaps-license.md` | **公開為 `js/historical_basemap.js`。** 只在源圖自己的年份繪製。沒有記錄跨年適用區間。郡州府仍不發布 |
 | 一級政區（`region`：刺史部 / 道 / 路 / 省等） | 沒有逐條來源記錄 | **座標不進入公開包。** 不稱為手繪 |
 | **郡 / 州 / 府級邊界**（`prefecture`） | 曾源自 **CHGIS V6** 與 **Hartwell China Historical GIS**。**本發行版已移除**，含整環副本（如魯 = 薛郡）和邊數過半的副本（如九原郡） | **不隨本倉庫發布**。不適用 GPL-3.0。學術、非商業、不得再分發。請向 [Harvard Dataverse](https://dataverse.harvard.edu/dataverse/chgis_v6) 取得 |
 | 古地名、重大事件、行跡路線、人物年譜、地名沿革 | 本專案依據史籍整理 | GPL-3.0 |

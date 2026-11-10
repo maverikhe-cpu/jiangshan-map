@@ -5,7 +5,7 @@
  * The maintainer added that LICENSE when asked about the data in issue #3.
  * Issue #74 has no maintainer reply and is not treated as a revocation.
  * These are the upstream features. They are not this atlas's edited rings and not CHGIS.
- * Coordinates are rounded to 0.1 degree. A view year uses the latest slice that is not later than that year.
+ * Coordinates are rounded to 0.1 degree. The page draws a slice only in its own year.
  */
 (function () {
   'use strict';

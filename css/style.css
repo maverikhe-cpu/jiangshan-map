@@ -618,7 +618,7 @@ h2 {
   z-index: 6;
   top: 52px;
   left: 16px;
-  max-width: min(360px, calc(100% - 400px));
+  max-width: min(380px, calc(100% - 400px));
   margin: 0;
   padding: 6px 10px;
   background: rgba(246, 241, 230, 0.94);
@@ -627,8 +627,41 @@ h2 {
   font-size: 12px;
   line-height: 1.45;
   color: #5c3b2e;
-  text-align: center;
+  text-align: left;
   pointer-events: none;
+}
+
+.edition-note p {
+  margin: 0;
+}
+
+.edition-note.is-reference {
+  background: #fff4e0;
+  border: 2px dashed #8a4b08;
+  color: #6a3208;
+}
+
+.edition-note.is-unmatched {
+  background: rgba(246, 241, 230, 0.94);
+}
+
+.historical-ref {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+  font-weight: 700;
+  pointer-events: auto;
+}
+
+.historical-ref select {
+  max-width: 140px;
+  font: inherit;
+}
+
+#grp-historical.is-reference-layer .historical-realm {
+  stroke: #8a4b08;
+  stroke-dasharray: 4 3;
 }
 
 .physical-land {

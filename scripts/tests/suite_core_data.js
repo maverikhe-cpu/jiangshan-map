@@ -86,33 +86,31 @@ async function runCoreDataSuite(ctx) {
     'ATLAS_EDITION must keep edited atlas boundaries unpublished and mark the upstream basemap as the published historical layer'
   );
   const historical = sandbox.window.HISTORICAL_BASEMAP;
-  const floorSlice = (year) => {
-    let chosen = null;
-    for (const slice of (historical && historical.slices) || []) {
-      if (slice.year <= year && (!chosen || slice.year > chosen.year)) chosen = slice;
-    }
-    return chosen;
-  };
-  const qinSlice = floorSlice(-221);
-  const warlordSlice = floorSlice(1938);
-  const moveSlice = floorSlice(1937);
-  const tangSlice = floorSlice(741);
+  const exactSlice = (year) => ((historical && historical.slices) || []).find((slice) => slice.year === year) || null;
+  const qinSlice = exactSlice(-300);
+  const warlordSlice = exactSlice(1938);
   assert(
     historical &&
       historical.commit === '4b5039e50d8d2464b065bd76ad6086cd4597108d' &&
+      !historical.intervals &&
+      exactSlice(-221) === null &&
+      exactSlice(741) === null &&
+      exactSlice(1937) === null &&
       qinSlice &&
-      qinSlice.year === -300 &&
       qinSlice.features.some((feature) => feature.name === 'Qin') &&
       !qinSlice.features.some((feature) => feature.name === 'Han Empire') &&
       warlordSlice &&
-      warlordSlice.year === 1938 &&
       warlordSlice.features.some((feature) => feature.name === 'Chinese warlords') &&
-      moveSlice &&
-      moveSlice.year === 1930 &&
-      tangSlice &&
-      tangSlice.year === 700 &&
-      tangSlice.features.some((feature) => feature.name === 'Sui Empire'),
-    'The published historical layer must floor to the upstream slice: Qin at -300, Chinese warlords at 1938, and the 700 file for a Tang year'
+      exactSlice(700) &&
+      exactSlice(700).features.some((feature) => feature.name === 'Sui Empire') &&
+      exactSlice(1930) &&
+      exactSlice(1930).year === 1930,
+    'Upstream sheets exist only at their own years: -221, 741 and 1937 have no sheet; -300, 700, 1930 and 1938 keep their own names'
+  );
+  const appSrc = fs.readFileSync(path.join(__dirname, '../../js/app.js'), 'utf8');
+  assert(
+    appSrc.includes('if (slice.year === year) return slice;') && !appSrc.includes('slice.year <= year'),
+    'The page must match a territory sheet only on its exact year'
   );
   const historicalSrc = fs.readFileSync(path.join(__dirname, '../../js/historical_basemap.js'), 'utf8');
   assert(

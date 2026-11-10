@@ -308,7 +308,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&text=%20%26%27CDEFHJKMNPQRSTWYabcdefghilmnoprstuvxy%E4%B8%89%E4%B8%9C%E4%B8%AD%E4%BA%94%E4%BA%BA%E4%BB%A3%E5%85%83%E5%85%AD%E5%85%B1%E5%8C%97%E5%8D%81%E5%8D%8E%E5%8D%97%E5%92%8C%E5%94%90%E5%9B%BD%E5%AE%8B%E5%B1%B1%E5%BA%8F%E6%88%98%E6%97%B6%E6%98%8E%E6%99%8B%E6%9C%9D%E6%B0%91%E6%B1%89%E6%B1%9F%E6%B8%85%E7%A7%A6%E8%A5%BF%E9%9A%8B&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=960825c6" />
+  <link rel="stylesheet" href="css/style.css?v=d584c8c6" />
   <!-- Analytics: Vercount & Cloudflare Web Analytics -->
   <script defer src="https://events.vercount.one/js"></script>
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "dc645937f75341b2a7416bd1fb81b635", "spa": false}'></script>
@@ -477,7 +477,14 @@
           <ul id="map-search-results" class="search-results-list is-hidden" role="listbox"></ul>
         </div>
 
-        <p id="edition-note" class="edition-note">着色疆域来自 historical-basemaps（GPL-3.0，André Ourednik）不晚于本年的上游整幅，是大陆尺度示意，不是细部疆界。郡州府边界本发行版暂缺。岸线与河流是 Natural Earth 1:50m，不是历史边界。</p>
+        <div id="edition-note" class="edition-note is-unmatched" role="note">
+          <p id="edition-note-text">事件年没有与之相符的上游疆域图时，不画历史边界。岸线和河流是 Natural Earth 1:50m，只供定位。郡州府边界本发行版暂缺。</p>
+          <label class="historical-ref" for="historical-ref-year">参考图（不是事件年疆域）
+            <select id="historical-ref-year">
+              <option value="">不另开参考图</option>
+            </select>
+          </label>
+        </div>
         <div id="map-key" aria-live="polite"></div>
 
         <div id="canvas-br-dock">
@@ -600,7 +607,7 @@
         </div>
 
         <div class="disclaimer-box" id="txt-disclaimer">
-          着色疆域来自 historical-basemaps（GPL-3.0，André Ourednik）不晚于本年的上游整幅，是大陆尺度示意，不是细部疆界。郡州府边界本发行版暂缺。岸线与河流是 Natural Earth 1:50m，不是历史边界。许可：https://github.com/aourednik/historical-basemaps/blob/4b5039e50d8d2464b065bd76ad6086cd4597108d/LICENSE
+          事件年没有与之相符的上游疆域图时，不画历史边界。岸线和河流是 Natural Earth 1:50m，只供定位。郡州府边界本发行版暂缺。许可：https://github.com/aourednik/historical-basemaps/blob/4b5039e50d8d2464b065bd76ad6086cd4597108d/LICENSE
         </div>
       </aside>
     </main>
@@ -768,7 +775,7 @@
   <script src="js/atlas_boot.js?v=534d8441"></script>
   <script src="js/map_data.js?v=1225b0bf"></script>
   <script src="js/lore_core.js?v=638bb298"></script>
-  <script id="atlas-app-script" src="js/app.js?v=a39854cb" data-v-snapshots="b7ba4b36" data-v-i18n="47f4c782" data-v-lore="0e4c4845" data-v-pinyin="9343356a" data-v-hant="3afdab47" data-v-quiz="822befe6" data-v-historical="687cdbc8"></script>
+  <script id="atlas-app-script" src="js/app.js?v=e1b05fb2" data-v-snapshots="b7ba4b36" data-v-i18n="43a5cb17" data-v-lore="0e4c4845" data-v-pinyin="9343356a" data-v-hant="3afdab47" data-v-quiz="822befe6" data-v-historical="3a254f21"></script>
   <script src="js/atlas_trace.js?v=90907ac0"></script>
   <script src="js/atlas_search.js?v=432e3c8b"></script>
   <script src="js/atlas_api.js?v=a81cb6af"></script>

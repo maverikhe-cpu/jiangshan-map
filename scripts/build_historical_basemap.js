@@ -195,7 +195,7 @@ async function buildData() {
     issue3: `${REPO}/issues/3`,
     issue74: `${REPO}/issues/74`,
     frame: FRAME,
-    yearRule: 'latest upstream slice whose year is not after the view year',
+    yearRule: 'show a slice only when the event year equals that slice year; no cross-year interval is recorded',
     note: 'Named upstream polygons only. Edited atlas rings and CHGIS prefectures are not included. See docs/historical-basemaps-license.md.',
     files,
   };
@@ -207,7 +207,7 @@ async function buildData() {
     ' * The maintainer added that LICENSE when asked about the data in issue #3.\n' +
     ' * Issue #74 has no maintainer reply and is not treated as a revocation.\n' +
     ' * These are the upstream features. They are not this atlas\'s edited rings and not CHGIS.\n' +
-    ' * Coordinates are rounded to 0.1 degree. A view year uses the latest slice that is not later than that year.\n' +
+    ' * Coordinates are rounded to 0.1 degree. The page draws a slice only in its own year.\n' +
     ' */\n' +
     '(function () {\n' +
     "  'use strict';\n" +
