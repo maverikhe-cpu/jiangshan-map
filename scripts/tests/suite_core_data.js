@@ -44,10 +44,11 @@ async function runCoreDataSuite(ctx) {
       Array.isArray(loreData.PLACE_LANDMARK_EVENTS) &&
       loreData.PLACE_LANDMARK_EVENTS.length >= 60 &&
       Array.isArray(loreData.HISTORICAL_JOURNEYS) &&
-      loreData.HISTORICAL_JOURNEYS.length === 7 &&
+      loreData.HISTORICAL_JOURNEYS.length === 8 &&
+      loreData.HISTORICAL_JOURNEYS.some((j) => j.key === 'linshi-daxue') &&
       Array.isArray(loreData.STRATEGIC_PASSES) &&
       loreData.STRATEGIC_PASSES.length >= 18,
-    'ATLAS_LORE_DATA must provide era spans, landmark events, strategic passes, and 7 historical journeys'
+    'ATLAS_LORE_DATA must provide era spans, landmark events, strategic passes, and 8 historical journeys'
   );
   for (const p of loreData.STRATEGIC_PASSES) {
     assert(
@@ -61,114 +62,84 @@ async function runCoreDataSuite(ctx) {
     );
   }
 
-  // 1b. Validate time-aware historical hydrography (5 Yellow River courses & historical lakes)
+  // 1b. Historical river courses and paleo-coasts are not published. The orientation layer is Natural Earth.
   assert(
-    hydro && Array.isArray(hydro.rivers) && Array.isArray(hydro.lakes) && Array.isArray(hydro.labels),
-    'HYDRO_DATA must contain rivers, lakes, and labels arrays'
+    hydro &&
+      Array.isArray(hydro.rivers) &&
+      hydro.rivers.length === 0 &&
+      Array.isArray(hydro.lakes) &&
+      hydro.lakes.length === 0 &&
+      Array.isArray(hydro.labels) &&
+      hydro.labels.length === 0 &&
+      Array.isArray(hydro.paleoSea) &&
+      hydro.paleoSea.length === 0,
+    'HYDRO_DATA must stay empty; the old river, lake, and paleo-coast coordinates had no upstream license URL'
   );
-  const isHydroActive = (item, y) =>
-    (item.appear === undefined || y >= item.appear) &&
-    (item.vanish === undefined || y < item.vanish);
-  const sampleEras = [
-    [-200, '河水（禹贡故道）'],
-    [500, '黄 河（王景故道）'],
-    [1100, '黄 河（北宋北流）'],
-    [1500, '黄 河（夺淮故道）'],
-    [2000, '黄 河'],
-  ];
-  for (const [sampleY, expectedLabel] of sampleEras) {
-    const activeHuangTrunks = hydro.rivers.filter(
-      (r) => r.name === 'Huang' && r.rank === 1 && isHydroActive(r, sampleY)
-    );
-    assert.strictEqual(
-      activeHuangTrunks.length,
-      4,
-      `Expected 4 active Yellow River trunk segments at year ${sampleY}, got ${activeHuangTrunks.length}`
-    );
-    const activeLabels = hydro.labels.filter((l) => isHydroActive(l, sampleY));
-    assert(
-      activeLabels.some((l) => l.zh === expectedLabel),
-      `Expected active Yellow River label "${expectedLabel}" at year ${sampleY}`
-    );
-  }
+  const physical = sandbox.window.PHYSICAL_BASEMAP;
+  const edition = sandbox.window.ATLAS_EDITION;
   assert(
-    !hydro.lakes.some((l) => l.name === 'Hongze Hu' && isHydroActive(l, 1000)) &&
-      hydro.lakes.some((l) => l.name === 'Hongze Hu' && isHydroActive(l, 1500)),
-    'Hongze Hu should only appear from 1194 CE onward'
+    edition &&
+      edition.historicalBoundaries === false &&
+      edition.upstreamBasemap === true &&
+      edition.terrainRelief === false &&
+      edition.historicalHydro === false,
+    'ATLAS_EDITION must keep edited atlas boundaries unpublished and mark the upstream basemap as the published historical layer'
+  );
+  const historical = sandbox.window.HISTORICAL_BASEMAP;
+  const exactSlice = (year) => ((historical && historical.slices) || []).find((slice) => slice.year === year) || null;
+  const qinSlice = exactSlice(-300);
+  const warlordSlice = exactSlice(1938);
+  assert(
+    historical &&
+      historical.commit === '4b5039e50d8d2464b065bd76ad6086cd4597108d' &&
+      !historical.intervals &&
+      exactSlice(-221) === null &&
+      exactSlice(741) === null &&
+      exactSlice(1937) === null &&
+      qinSlice &&
+      qinSlice.features.some((feature) => feature.name === 'Qin') &&
+      !qinSlice.features.some((feature) => feature.name === 'Han Empire') &&
+      warlordSlice &&
+      warlordSlice.features.some((feature) => feature.name === 'Chinese warlords') &&
+      exactSlice(700) &&
+      exactSlice(700).features.some((feature) => feature.name === 'Sui Empire') &&
+      exactSlice(1930) &&
+      exactSlice(1930).year === 1930,
+    'Upstream sheets exist only at their own years: -221, 741 and 1937 have no sheet; -300, 700, 1930 and 1938 keep their own names'
+  );
+  const appSrc = fs.readFileSync(path.join(__dirname, '../../js/app.js'), 'utf8');
+  assert(
+    appSrc.includes('if (slice.year === year) return slice;') && !appSrc.includes('slice.year <= year'),
+    'The page must match a territory sheet only on its exact year'
+  );
+  const historicalSrc = fs.readFileSync(path.join(__dirname, '../../js/historical_basemap.js'), 'utf8');
+  assert(
+    historicalSrc.includes('GPL-3.0') &&
+      historicalSrc.includes('4b5039e50d8d2464b065bd76ad6086cd4597108d') &&
+      !historicalSrc.includes('九原郡') &&
+      !historicalSrc.includes('"shape"'),
+    'historical_basemap.js must cite GPL-3.0 and the pinned commit, and must not carry edited atlas rings'
   );
   assert(
-    hydro.lakes.some((l) => l.name === 'Juye Ze' && isHydroActive(l, 1080)) &&
-      !hydro.lakes.some((l) => l.name === 'Juye Ze' && isHydroActive(l, 1400)),
-    'Juye Ze / Liangshan Marsh should vanish after 1280 CE'
+    physical && Array.isArray(physical.land) && physical.land.length > 0 && Array.isArray(physical.rivers) && Array.isArray(physical.lakes),
+    'PHYSICAL_BASEMAP must publish Natural Earth land, rivers, and lakes'
   );
   assert(
-    Array.isArray(hydro.paleoSea) && hydro.paleoSea.length >= 9,
-    'HYDRO_DATA.paleoSea must contain P0 (Bohai), P1 (East China), and P2 (Pearl River Delta & Taijiang Inner Sea) historical paleo-sea shoreline masks'
+    physical.rivers.some((r) => r.name === 'Huang') && physical.rivers.some((r) => r.name === 'Yangtze' || r.name === 'Chang Jiang'),
+    'The physical basemap must include the modern Yellow and Yangtze centerlines from Natural Earth'
   );
+  const basemapSrc = fs.readFileSync(path.join(__dirname, '../../js/physical_basemap.js'), 'utf8');
   assert(
-    hydro.paleoSea.filter((p) => isHydroActive(p, -210)).length >= 4 &&
-      hydro.paleoSea.filter((p) => isHydroActive(p, 741)).length >= 4 &&
-      hydro.paleoSea.filter((p) => isHydroActive(p, 1500)).length >= 4 &&
-      hydro.paleoSea.filter((p) => isHydroActive(p, 1900)).length === 0,
-    'All paleo-sea masks must cover their historical epochs (<220, 220–1128, 1128–1823/1855) and vanish in the modern era'
-  );
-  assert(
-    hydro.paleoSea[3].polys[0].length === 2 &&
-      hydro.paleoSea[4].polys[0].length === 3 &&
-      hydro.paleoSea[5].polys[0].length === 3 &&
-      hydro.paleoSea[6].polys[0].length === 2 &&
-      hydro.paleoSea[8].vanish === 1823,
-    'Paleo-sea masks must include inner holes for Yuzhou Island (PS[3..5]), Dongsha / Chongming Island (PS[4..5]), and Xiangshan Island (PS[6]), plus the pre-1823 Taijiang Inner Sea (PS[8])'
-  );
-  const wangJing = hydro.rivers.find((r) => r.name === 'Huang' && r.appear === 11 && r.vanish === 1048);
-  assert(
-    wangJing &&
-      JSON.stringify(wangJing.lines[0][wangJing.lines[0].length - 1]) === JSON.stringify([118.09, 37.56]),
-    'Wang Jing Yellow River course (11–1048 CE) must terminate at the Qiancheng/Lijin estuary [118.09, 37.56]'
-  );
-  const jiEarly = hydro.rivers.find((r) => r.name === 'Ji' && r.vanish === 1128);
-  const jiLate = hydro.rivers.find((r) => r.name === 'Ji' && r.appear === 1128 && r.vanish === 1855);
-  assert(
-    jiEarly &&
-      JSON.stringify(jiEarly.lines[0][jiEarly.lines[0].length - 1]) === JSON.stringify([118.14, 37.5]) &&
-      jiLate &&
-      JSON.stringify(jiLate.lines[0][jiLate.lines[0].length - 1]) === JSON.stringify([118.46, 37.68]),
-    'Ji / Daqing River must be split into <1128 ([118.14, 37.5]) and 1128–1855 ([118.46, 37.68]) estuaries'
-  );
-  const huaiEarly = hydro.rivers.find((r) => r.name === 'Huai' && r.vanish === 1194);
-  const huangDuohuai = hydro.rivers.find((r) => r.name === 'Huang' && r.appear === 1194 && r.vanish === 1855 && r.lines[0][r.lines[0].length - 1][0] > 119);
-  const cjEstuary = hydro.rivers.find((r) => r.name === 'Yangtze Estuary');
-  assert(
-    huaiEarly &&
-      JSON.stringify(huaiEarly.lines[0][huaiEarly.lines[0].length - 1]) === JSON.stringify([119.49, 34.08]) &&
-      huangDuohuai &&
-      JSON.stringify(huangDuohuai.lines[0][huangDuohuai.lines[0].length - 1]) === JSON.stringify([119.95, 34.14]) &&
-      cjEstuary &&
-      JSON.stringify(cjEstuary.lines[0][cjEstuary.lines[0].length - 1]) === JSON.stringify([121.15, 31.75]),
-    'Huai (<1194), Yellow-Huai (1194–1855), and Yangtze Estuary ([121.15, 31.75]) river mouths must terminate on their respective paleo-coastlines'
+    basemapSrc.includes('https://www.naturalearthdata.com/about/terms-of-use/') && basemapSrc.includes('ne_50m_land'),
+    'physical_basemap.js must cite the Natural Earth terms and the land layer'
   );
 
-  // 2. Validate modern provincial outlines
-  assert(Array.isArray(provinces) && provinces.length >= 34, 'PROVINCE_OUTLINES must contain >= 34 provinces');
-  let provRingCount = 0;
-  for (const prov of provinces) {
-    const isDash = String(prov.code).includes('_JD');
-    if (!isDash) {
-      assert(prov.title && Array.isArray(prov.hub) && prov.hub.length === 2, `Invalid province metadata: ${JSON.stringify(prov.title)}`);
-    }
-    assert(Array.isArray(prov.rings) && prov.rings.length > 0, `Province ${prov.title} has no polygon rings`);
-    for (const poly of prov.rings) {
-      for (const ring of poly) {
-        provRingCount++;
-        assert(ring.length >= (isDash ? 2 : 3), `Degenerate ring in province ${prov.title}`);
-        if (!FAST_MODE) {
-          for (const [lng, lat] of ring) {
-            assert(lng >= 65 && lng <= 145 && lat >= 3 && lat <= 60, `Out-of-bounds province coordinate [${lng}, ${lat}] in ${prov.title}`);
-          }
-        }
-      }
-    }
-  }
+  // 2. Modern province outlines are not shipped. DataV/Amap terms do not clearly allow public redistribution.
+  assert(Array.isArray(provinces) && provinces.length === 0, `PROVINCE_OUTLINES must be empty, got ${provinces && provinces.length}`);
+  const chinaSrc = fs.readFileSync(path.join(__dirname, '../../js/china_geo_data.js'), 'utf8');
+  assert(!chinaSrc.includes('110000') && !chinaSrc.includes('100000_JD'), 'china_geo_data.js must not carry DataV province adcodes');
+  assert(chinaSrc.includes('window.HYDRO_DATA'), 'china_geo_data.js must still publish hydrography');
+  const provRingCount = 0;
 
   // 3. Validate historical dynasties, phases, settlements, and snapshot references
   assert(Array.isArray(dynasties) && dynasties.length === 18, `Expected 18 dynasties, got ${dynasties && dynasties.length}`);
@@ -231,160 +202,51 @@ async function runCoreDataSuite(ctx) {
     's_qing_e4 (1860-1864) must retain Taiping Heavenly Kingdom while s_qing_f (1864+) removes it'
   );
 
-  // 4. Validate lazy topology decoding across all snapshots
+  // 4. Published bundles keep snapshot records and omit polygon coordinates.
   assert(snapKeys.length >= 100, `Expected >= 100 snapshots, got ${snapKeys.length}`);
-  let decodedPolygons = 0;
-  let totalVertices = 0;
-
-  function verifyShape(shape, context) {
-    assert(shape && (shape.type === 'Polygon' || shape.type === 'MultiPolygon'), `Invalid shape type in ${context}`);
-    const coords = shape.coordinates;
-    assert(Array.isArray(coords) && coords.length > 0, `Empty coordinates in ${context}`);
-    const polys = shape.type === 'Polygon' ? [coords] : coords;
-    for (const poly of polys) {
-      for (const ring of poly) {
-        assert(Array.isArray(ring) && ring.length >= 3, `Degenerate polygon ring in ${context}`);
-        for (const [lng, lat] of ring) {
-          totalVertices++;
-          assert(
-            typeof lng === 'number' && typeof lat === 'number' && lng >= 30 && lng <= 180 && lat >= -15 && lat <= 85,
-            `Invalid coordinate [${lng}, ${lat}] in ${context}`
-          );
-        }
-      }
-    }
-    decodedPolygons++;
-  }
-
-  const lakeLabels = (hydro.labels || []).filter((l) => l.kind === 'lake');
-
-  if (!FAST_MODE) {
-    for (const [k, snap] of Object.entries(snapshots)) {
-      if (Array.isArray(snap)) {
-        snap.forEach((item, idx) => verifyShape(item.shape, `${k}[${idx}]`));
-      } else if (snap && typeof snap === 'object') {
-        for (const grp of ['polities', 'prefectures', 'regions']) {
-          for (const item of snap[grp] || []) {
-            verifyShape(item.shape, `${k}.${grp}(${item.title || 'unnamed'})`);
-            if (grp === 'polities' && (item.role === 'main' || item.role === 'rival') && item.anchor) {
-              const [ax, ay] = item.anchor;
-              assert(
-                pointInShape(ax, ay, item.shape),
-                `Polity anchor [${ax}, ${ay}] for ${item.title} (${item.role}) in ${k} lies outside its polygon`
-              );
-              if (item.role === 'main') {
-                for (const lk of lakeLabels) {
-                  const dist = Math.hypot(ax - lk.coord[0], ay - lk.coord[1]);
-                  assert(
-                    dist >= 0.85,
-                    `Main polity anchor [${ax}, ${ay}] for ${item.title} in ${k} collides with lake label ${lk.zh} at [${lk.coord}] (dist=${dist.toFixed(2)}°)`
-                  );
-                }
-              }
-            }
-          }
-        }
+  const decodedPolygons = 0;
+  const totalVertices = 0;
+  let publishedShapes = 0;
+  for (const snap of Object.values(snapshots)) {
+    const groups = Array.isArray(snap) ? [snap] : [snap && snap.polities, snap && snap.prefectures, snap && snap.regions];
+    for (const group of groups) {
+      for (const item of group || []) {
+        if (item && item.shape) publishedShapes++;
       }
     }
   }
+  assert.strictEqual(publishedShapes, 0, 'Published snapshots must not carry polygon coordinates');
+  assert(Array.isArray(snapshots.neighbors) && snapshots.neighbors.length === 0, 'Modern neighbour outlines are not in the published bundle');
 
-  // 4a. Validate P0-B Bohai Bay & Yellow River Delta shoreline calibration & Dengzhou coastal seat
-  const qinPol = snapshots.s_qin_a.polities.find((p) => p.title === '秦');
+  // 4a. Place records stay. Boundary containment is not claimed when the outline is withheld.
   const tangPol = snapshots.s_tang_b.polities.find((p) => p.title === '唐');
   const mingPol = snapshots.s_ming_a.polities.find((p) => p.title === '明');
   const qingEarlyPol = snapshots.s_qing_d.polities.find((p) => p.title === '清');
   const qingLatePol = snapshots.s_qing_e2.polities.find((p) => p.title === '清');
   assert(
-    qinPol &&
-      tangPol &&
-      mingPol &&
-      qingEarlyPol &&
-      qingLatePol &&
-      !pointInShape(118.95, 37.8, qinPol.shape) &&
-      !pointInShape(118.95, 37.8, tangPol.shape) &&
-      !pointInShape(118.95, 37.8, mingPol.shape) &&
-      !pointInShape(118.95, 37.8, qingEarlyPol.shape) &&
-      pointInShape(118.95, 37.8, qingLatePol.shape),
-    'Pre-1855 polities must not wrap the post-1855 Dongying Yellow River delta lobe ([118.95, 37.8]), whereas post-1855 polities must cover it'
-  );
-  assert(
-    !pointInShape(117.3, 38.8, qinPol.shape) && pointInShape(117.3, 38.8, tangPol.shape),
-    'Pre-220 CE polities must reflect the western Bohai Bay marine transgression ([117.3, 38.8]), whereas post-220 CE polities cover the prograded shore'
+    tangPol && mingPol && qingEarlyPol && qingLatePol && !tangPol.shape && !mingPol.shape && !qingEarlyPol.shape && !qingLatePol.shape,
+    'Tang, Ming, and Qing polity records remain, without a published boundary'
   );
   const tangDynForDengzhou = dynasties.find((d) => d.key === 'tang');
   const dengzhouSettle = tangDynForDengzhou && tangDynForDengzhou.settlements.find((s) => s.ancient === '登州');
   assert(
-    dengzhouSettle &&
-      JSON.stringify(dengzhouSettle.coord) === JSON.stringify([120.76, 37.8]) &&
-      pointInShape(120.76, 37.8, tangPol.shape),
-    'Dengzhou (Penglai) settlement must sit at [120.76, 37.8] on the northern Jiaodong coast inside the calibrated Tang polygon'
-  );
-  // Validate P1 East China Coast & Yangtze Estuary progradation (Northern Jiangsu, Yuzhou Island, Dongsha/Chongming, Shanghai)
-  assert(
-    !pointInShape(120.45, 33.2, qinPol.shape) &&
-      !pointInShape(120.45, 33.2, tangPol.shape) &&
-      pointInShape(120.45, 33.2, mingPol.shape) &&
-      pointInShape(120.45, 33.2, qingEarlyPol.shape),
-    'Pre-1128 polities must follow the Fan Gong Dike shoreline in Northern Jiangsu (excluding [120.45, 33.2]), whereas post-1128 polities cover the prograded Yellow-Huai plain'
-  );
-  assert(
-    !pointInShape(121.7, 31.1, qinPol.shape) &&
-      !pointInShape(121.7, 31.1, tangPol.shape) &&
-      pointInShape(121.7, 31.1, mingPol.shape) &&
-      !pointInShape(121.88, 31.0, mingPol.shape) &&
-      pointInShape(121.88, 31.0, qingLatePol.shape),
-    'Shanghai coast must prograde from Gu Gangshen / Hanhaitang (<1128) to Qingongtang (1128–1855) to modern Nanhui (>=1855)'
-  );
-  assert(
-    pointInShape(119.42, 34.73, qinPol.shape) &&
-      pointInShape(119.42, 34.73, tangPol.shape) &&
-      pointInShape(119.42, 34.73, mingPol.shape) &&
-      !pointInShape(119.28, 34.72, tangPol.shape) &&
-      pointInShape(119.28, 34.72, qingLatePol.shape),
-    'Yuzhou Island ([119.42, 34.73]) must remain an offshore island separated by the Haizhou Bay strait ([119.28, 34.72]) prior to 1855 CE'
-  );
-  assert(
-    !pointInShape(121.5, 31.62, qinPol.shape) &&
-      pointInShape(121.5, 31.62, tangPol.shape) &&
-      pointInShape(121.55, 31.62, mingPol.shape) &&
-      pointInShape(121.55, 31.62, qingLatePol.shape),
-    'Yangtze Estuary must transition from open funnel (<220) to Dongsha shoal (220–1128) to Chongming Island (>=1128)'
-  );
-  // Validate P2 Southeast & South China Coast (Pearl River Delta / Xiangshan Island, Tainan Taijiang Inner Sea, and coastal settlements)
-  const qinFullPol = snapshots.s_qin.polities.find((p) => p.title === '秦');
-  assert(
-    qinFullPol &&
-      !pointInShape(113.42, 22.58, qinFullPol.shape) &&
-      !pointInShape(113.42, 22.58, tangPol.shape) &&
-      pointInShape(113.48, 22.32, qinFullPol.shape) &&
-      pointInShape(113.48, 22.32, tangPol.shape) &&
-      pointInShape(113.42, 22.58, mingPol.shape) &&
-      pointInShape(113.42, 22.58, qingEarlyPol.shape) &&
-      !pointInShape(113.62, 22.55, mingPol.shape) &&
-      !pointInShape(113.62, 22.55, qingEarlyPol.shape) &&
-      pointInShape(113.62, 22.55, qingLatePol.shape),
-    'Pearl River Delta must transition from open inner estuarine bay with offshore Xiangshan Island (<1128) to reclaimed Shatian plain (1128–1855) to modern Nansha/Wanqingsha shoreline (>=1855)'
+    dengzhouSettle && JSON.stringify(dengzhouSettle.coord) === JSON.stringify([120.76, 37.8]),
+    'Dengzhou (Penglai) settlement must stay at [120.76, 37.8]'
   );
   const qingEarlyTw = snapshots.s_qing_d.regions.find((r) => r.title === '台湾');
   const qingLateTw = snapshots.s_qing_e2.regions.find((r) => r.title === '台湾');
   assert(
-    qingEarlyTw &&
-      qingLateTw &&
-      !pointInShape(120.12, 23.08, qingEarlyPol.shape) &&
-      !pointInShape(120.12, 23.08, qingEarlyTw.shape) &&
-      pointInShape(120.12, 23.08, qingLatePol.shape) &&
-      pointInShape(120.12, 23.08, qingLateTw.shape),
-    'Tainan Taijiang Inner Sea ([120.12, 23.08]) must remain an open coastal lagoon prior to 1823 CE and silt into land in s_qing_e2 (>=1823)'
+    qingEarlyTw && qingLateTw && !qingEarlyTw.shape && !qingLateTw.shape,
+    'Taiwan region records remain, without a published boundary'
   );
   for (const d of dynasties) {
     const snap = snapshots[d.snapKey];
     if (!snap || !Array.isArray(snap.polities)) continue;
     for (const s of d.settlements || []) {
       const [sx, sy] = s.coord;
-      const insideAny = snap.polities.some((p) => pointInShape(sx, sy, p.shape));
       assert(
-        insideAny,
-        `Settlement ${s.ancient} (${s.modern}) at [${sx}, ${sy}] in dynasty ${d.key} (${d.snapKey}) lies in the sea / outside all polities`
+        sx >= 30 && sx <= 180 && sy >= -15 && sy <= 85,
+        `Settlement ${s.ancient} (${s.modern}) at [${sx}, ${sy}] in dynasty ${d.key} is outside the atlas frame`
       );
     }
   }
@@ -433,7 +295,10 @@ async function runCoreDataSuite(ctx) {
     'atlas_boot.js must provide neighbors, s_zhanguo_a, and s_qin_a identical to atlas_snapshots.js for instant first paint'
   );
   if (!FAST_MODE) {
-    verifyShape(bootSnaps.s_zhanguo_a.polities[0].shape, 'boot.s_zhanguo_a.polities[0]');
+    assert(
+      bootSnaps.s_zhanguo_a.polities.length > 0 && !bootSnaps.s_zhanguo_a.polities[0].shape,
+      'Boot seed must not publish a polity polygon'
+    );
   }
 
   // 6. Verify Unified Milestone Balloon Auto-Show ("史事浮签") follows #chk-milestones directly & dead code pruned

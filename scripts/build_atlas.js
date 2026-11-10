@@ -27,6 +27,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { bannedRing } = require('./ring_guard');
 
 const ROOT = path.resolve(__dirname, '..');
 const DATA_DIR = 'data/atlas';
@@ -35,12 +36,16 @@ const FULL_PATH = 'js/atlas_snapshots.js';
 const BOOT_PATH = 'js/atlas_boot.js';
 
 const FEATURE_LISTS = new Set(['polities', 'prefectures', 'regions']);
+// Public bundles omit polygon coordinates. A shared edge or a similarity ratio is not a license
+// finding, and this edition does not describe the remaining source rings as independently hand-drawn.
+const PUBLISH_POLYGONS = false;
 // Stamped into every snapshot file so the terms travel with files copied out of the repo.
 const LICENSE_NOTICE =
-  'Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas ' +
-  '(https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Prefecture-level ' +
-  '(郡/州/府) boundaries derive from CHGIS V6 and the Hartwell China Historical GIS: academic, non-commercial use ' +
-  'only; do not redistribute; not licensed under GPL-3.0.';
+  'These source files are outside the public site directory (site/). This edition does not copy their polygon ' +
+  'coordinates into the published bundles: per-feature redistribution rights are not confirmed. A shared edge or a ' +
+  'similarity ratio is not a license determination, and these outlines are not described here as independently ' +
+  'hand-drawn. CHGIS V6 / Hartwell prefecture boundaries and DataV/Amap modern province outlines are not included. ' +
+  'This notice is not a legal clearance.';
 const SCALE = 100;
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-';
 
@@ -195,6 +200,7 @@ function encodeBundle(doc, { keys = Object.keys(doc.snapshots), isBoot = false }
     const label = `${where} → ${feature.title || `#${docIndex}`}`;
     const raw = {};
     for (const [key, value] of Object.entries(feature)) {
+      if (key === 'shape' && !PUBLISH_POLYGONS) continue;
       if (key !== 'shape' || !value) {
         raw[key] = value;
       } else if (value.type === 'Polygon') {
@@ -220,6 +226,10 @@ function encodeBundle(doc, { keys = Object.keys(doc.snapshots), isBoot = false }
   for (const key of keys) {
     const snap = doc.snapshots[key];
     if (snap === undefined) throw new Error(`Unknown snapshot key: ${key}`);
+    if (key === 'neighbors' && !PUBLISH_POLYGONS) {
+      d[key] = [];
+      continue;
+    }
     if (Array.isArray(snap)) {
       d[key] = snap.map((idx) => featureId(idx, key));
     } else {
@@ -338,6 +348,10 @@ function loadSources(rootDir = ROOT) {
       } else {
         const problem = f.geometry ? normalizeGeometry(f.geometry) : null;
         if (problem) errors.push(`${rel}: feature "${f.id}": ${problem}`);
+        const banned = f.geometry ? bannedRing(f.geometry) : null;
+        if (banned) {
+          errors.push(`${rel}: feature "${f.id}" repeats a removed CHGIS-derived ring (${banned})`);
+        }
         featureIndex.set(ref, features.length);
         featureFiles.push(file);
         features.push(f.geometry ? { ...f.properties, shape: f.geometry } : { ...f.properties });
@@ -363,6 +377,9 @@ function loadSources(rootDir = ROOT) {
     if (Array.isArray(snap)) {
       snapshots[key] = snap.map((ref) => resolve(ref, key, rel));
     } else if (snap && typeof snap === 'object') {
+      if (Array.isArray(snap.prefectures) && snap.prefectures.length) {
+        errors.push(`${rel}: prefectures must stay empty; CHGIS prefecture geometry is not republished`);
+      }
       snapshots[key] = Object.fromEntries(
         Object.entries(snap).map(([k, v]) => [k, FEATURE_LISTS.has(k) && Array.isArray(v) ? v.map((ref) => resolve(ref, key, rel)) : v])
       );

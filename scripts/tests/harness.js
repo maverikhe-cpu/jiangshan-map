@@ -14,6 +14,8 @@ function createValidationContext({ fastMode = false } = {}) {
   vm.createContext(sandbox);
 
   const dataScripts = [
+    'physical_basemap.js',
+    'historical_basemap.js',
     'china_geo_data.js',
     'atlas_boot.js',
     'atlas_snapshots.js',
@@ -172,6 +174,7 @@ function createValidationContext({ fastMode = false } = {}) {
     return b;
   }
   function shapeBbox(shape) {
+    if (!shape || !shape.coordinates) return { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
     let b = SHAPE_BBOX_CACHE.get(shape);
     if (!b) {
       let minX = Infinity;
@@ -209,6 +212,7 @@ function createValidationContext({ fastMode = false } = {}) {
     return inside;
   }
   function pointInShape(x, y, shape) {
+    if (!shape || !shape.coordinates) return false;
     const sb = shapeBbox(shape);
     if (x < sb.minX || x > sb.maxX || y < sb.minY || y > sb.maxY) return false;
     const polys = shape.type === 'Polygon' ? [shape.coordinates] : shape.coordinates;

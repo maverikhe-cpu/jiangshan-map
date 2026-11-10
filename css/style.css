@@ -613,6 +613,95 @@ h2 {
   fill: var(--water-fill);
 }
 
+.edition-note {
+  position: absolute;
+  z-index: 6;
+  top: 52px;
+  left: 16px;
+  max-width: min(380px, calc(100% - 400px));
+  margin: 0;
+  padding: 6px 10px;
+  background: rgba(246, 241, 230, 0.94);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #5c3b2e;
+  text-align: left;
+  pointer-events: none;
+}
+
+.edition-note p {
+  margin: 0;
+}
+
+.edition-note.is-reference {
+  background: #fff4e0;
+  border: 2px dashed #8a4b08;
+  color: #6a3208;
+}
+
+.edition-note.is-unmatched {
+  background: rgba(246, 241, 230, 0.94);
+}
+
+.historical-ref {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+  font-weight: 700;
+  pointer-events: auto;
+}
+
+.historical-ref select {
+  max-width: 140px;
+  font: inherit;
+}
+
+#grp-historical.is-reference-layer .historical-realm {
+  stroke: #8a4b08;
+  stroke-dasharray: 4 3;
+}
+
+.physical-land {
+  fill: #efe6d4;
+  stroke: #c3b59a;
+  stroke-width: 0.7;
+  pointer-events: none;
+}
+
+.historical-realm {
+  stroke: rgba(70, 48, 28, 0.5);
+  stroke-width: 0.55;
+  pointer-events: none;
+}
+
+.historical-label {
+  font-size: 13px;
+  font-family: var(--serif-stack);
+  fill: #3d2a1c;
+  paint-order: stroke;
+  stroke: rgba(246, 241, 230, 0.88);
+  stroke-width: 3px;
+  pointer-events: none;
+}
+
+#grp-physical.is-hidden {
+  opacity: 0;
+}
+
+@media (max-width: 640px) {
+  .edition-note {
+    top: 46px;
+    left: 8px;
+    right: 8px;
+    max-width: none;
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+}
+
 /* Terrain Shaded Relief & Hydrology Layer */
 #grp-terrain {
   pointer-events: none;

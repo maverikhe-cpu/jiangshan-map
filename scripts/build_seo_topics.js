@@ -4,7 +4,7 @@
  *
  * Generates zero-query-string static HTML landing pages under `topics/*.html` for:
  *   1. All 18 historical eras (`topics/<dynasty.key>.html`)
- *   2. All 7 biographical journeys (`topics/journey-<key>.html`)
+ *   2. Biographical and topical journeys (`topics/journey-<key>.html`)
  *   3. 9 high-search-intent classical poetry routes & historical battles (`topics/<slug>.html`)
  *   4. Master index directory (`topics/index.html`)
  *

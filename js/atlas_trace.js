@@ -3602,7 +3602,11 @@
         ? this._passName(matchedPass, this.year, this.locale)
         : modernTitle
           ? this.trTerm(modernTitle)
-          : this.uiStr('outside_modern', '现代省界外 / 海域');
+          : this._modernOutlinesWithheld() && closestOverall && closestOverall.s
+            ? this.trTerm(closestOverall.s.modern || closestOverall.s.ancient)
+            : this._modernOutlinesWithheld()
+              ? this.uiStr('boundary_withheld', '本发行版暂缺边界')
+              : this.uiStr('outside_modern', '现代省界外 / 海域');
       const titleSuffix = matchedPass
         ? ` · ${this.locale === 'en' ? matchedPass.modernEn : '今' + matchedPass.modernZh}`
         : identityModern
@@ -3814,7 +3818,9 @@
             ? adminHits.join(' · ')
             : polityHit
               ? this.trTerm(polityHit)
-              : this.uiStr('beyond_recorded', '（域外 / 未设郡县）');
+              : this._historicalBoundariesWithheld()
+                ? this.uiStr('boundary_withheld', '本发行版暂缺边界')
+                : this.uiStr('beyond_recorded', '（域外 / 未设郡县）');
 
           const defaultCapLabel = d.key === 'roc' || d.key === 'prc' ? '首都' : '王朝都城';
           const capBadgeHtml = isCapHere

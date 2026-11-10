@@ -36,6 +36,7 @@ const SYNC_CONTROLLER_SCRIPTS = [
 
 const STATIC_TAG_ASSETS = [
   'css/style.css',
+  'js/physical_basemap.js',
   'js/china_geo_data.js',
   'js/atlas_boot.js',
   'js/map_data.js',
@@ -50,6 +51,7 @@ const LAZY_ATTR_ASSETS = [
   { attr: 'data-v-pinyin', datasetKey: 'vPinyin', relPath: 'js/event_pinyin.js' },
   { attr: 'data-v-hant', datasetKey: 'vHant', relPath: 'js/zh_hant.js' },
   { attr: 'data-v-quiz', datasetKey: 'vQuiz', relPath: 'js/atlas_quiz.js' },
+  { attr: 'data-v-historical', datasetKey: 'vHistorical', relPath: 'js/historical_basemap.js' },
 ];
 
 function shortSha256(filePath) {

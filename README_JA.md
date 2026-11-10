@@ -41,14 +41,14 @@
 
 ### 機能 1：タイムラインをスクロールして、国々の興亡を眺め、君主を追い、古今の国境を比べる
 
-- **1 枚のキャンバスで複数の勢力が対峙**：戦国七雄（秦、楚、斉、燕、趙、魏、韓）と周、越、巴蜀、中山、義渠から、三国時代の群雄（袁紹、曹操、劉備、孫権、遼東の公孫氏）、南北朝、五代十国、そして宋、遼、西夏、大理、金、モンゴルまで、すべてが伝統的な羊皮紙のコントラストの強い色合いで並べて描かれます。左下の凡例でどれかの勢力にカーソルを合わせるとその領土が強調され、クリックするとそこへまっすぐズームします。
+- **1 枚のキャンバスで複数の勢力が対峙**：この配布に残っている政権の輪郭だけを、羊皮紙のコントラストの強い色で並べて描きます。戦国七雄、周、越、巴蜀、中山、義渠、遼東の公孫氏など、早い時期の輪郭の多くはこの配布にありません。左下の凡例に残っている名前へカーソルを合わせると、公開している領土が強調され、クリックするとそこへズームします。
 - **多段階の領土の変遷と、破線の「Ghost Boundary Diff」**：秦の巴蜀の征服（紀元前 316 年）、燕の将軍・秦開による遼東への拡大（紀元前 300 年）、交趾に立てた馬援の銅柱（43 年）、司馬懿の遼東遠征（238 年）、李靖による吐谷渾の征服（635 年）、安西四鎮と王玄策の中天竺への遠征（648 年）、元の宣政院によるチベットの統治（1288 年）、明の哈密と嘉峪関以西の七衛（1404 年）、イリを回復した 1881 年のサンクトペテルブルク条約、1898 年の外国の租借地、1945 年の台湾の返還、そして 1946 年の **「秋海棠」（秋海棠）** の地図から **「雄鶏」（雄鸡）** の地図への移行など、領土の大きな節目ごとに、出来事や時期の点をクリックすると地図が切り替わり、前の時期の朱色の破線の **Ghost Boundary Diff** が表示されるので、領土の増減がひと目でわかります。
 - **在位中の君主と元号のインライン表示**：タイムラインには、在位中の君主（廟号・諡号 + 名 + 在位期間。例：`Emperor Wu of Han · Liu Che`、`Emperor Taizong of Tang · Li Shimin`、`Emperor Shengzu of Qing · Xuanye`）と、その正確な元号の年が動的に表示されます。
-- **古代の行政区画のホバーでの確認と、現代の X-Ray Lens**：第一級の行政区画（郡、道、路、省）は、重複を除いた **Parchment Casing** の境界線で描かれます。ズームしてどの行政区画（例：明の `Yingtian Prefecture` や三国時代の `Jingzhou`）にカーソルを合わせても、その管轄と対応する現代の省を確認できます。**X-Ray Lens** を切り替えると、現代の省の境界線を歴史地図の上に直接重ねられます。
+- **この配布に残る歴史上の行政区画**：残している第一級区画は、重複を除いた **Parchment Casing** で描きます。郡・州・府のポリゴンと現代の省界はこの配布にないため、X-Ray Lens も、明の応天府のような府ポリゴンへのホバーもありません。
 - **動く河道、古代の湖、大規模な土木事業**：時間をスクロールすると、黄河の流路の歴史的な変化、広がったり縮んだりする古代の湖（*雲夢沢*、*ロプノール / 蒲昌海*）、戦国・秦・漢・明の長城、隋唐の運河と大運河、シルクロード、鄭和の航路が、それぞれの時代に合わせて変わっていきます。渤海湾、江蘇北部、長江河口、珠江デルタの古代の海岸線も、時代とともに前進・後退します。
 - **ズームできるタイムライン**：タイムライン両端のハンドルを内側へドラッグすると、その期間だけを拡大できます（秦、三国、五代のような短い時代に便利です）。タイムラインをダブルクリックすると全体表示に戻ります。
 
-> [ライブで試す：明の永楽 13 年（1415 年）· 両京十三布政使司と「Yingtian Prefecture」の確認 →](https://deanchen.me/jiangshan-map/?year=1415&zoom=1.75&center=115.8,33.2&hover=Yingtian%20Prefecture&lang=en)
+> [ライブで試す：明の永楽 13 年（1415 年）、中心は南京 →](https://deanchen.me/jiangshan-map/?year=1415&zoom=1.75&center=115.8,33.2&lang=en)
 
 ![明 1415 年 · Yingtian Prefecture のホバーのプレビュー](assets/preview_1415_ming_yingtian_en.webp)
 
@@ -57,7 +57,7 @@
 ### 機能 2：古都や戦略上の峠をクリックして、2,400 年の歴史をひもとく（`Trace Place`）
 
 地図上の **古都や峠をクリック** する（またはキャンバスのどこかをダブルクリックする）と、その **Trace Place** の系譜カードが開きます。
-- **2 か国語の都市の伝承バナーと、2,400 年にわたる行政の系譜**：カードの上部では、その都市について厳選した **詩の題辞と歴史の紹介** を読めます。その下では、戦国と秦の郡、漢の州刺史部、唐の道、宋の路から、元・明・清の省、現代の市まで、18 のすべての時代を通じて、その名前と行政上の管轄がどう変わったかをたどれます。`Imperial Capital` のバッジと、王朝の治所についての注記も付いています。
+- **2 か国語の都市の伝承バナーと、2,400 年にわたる行政の系譜**：カードの上部では、その都市について厳選した **詩の題辞と歴史の紹介** を読めます。その下の沿革は、この配布に残っている区画から読みます。郡・州・府のポリゴンと現代の省界は含まず、現代の行は最寄りの古城だけを示します。`Imperial Capital` のバッジと、王朝の治所についての注記も付いています。
 - **その地で起きた出来事**：それぞれの王朝の行の下で、まさにその場所で起きた大きな歴史上の出来事を確認できます（例：咸陽での *商鞅の変法* と *秦の統一*、樊城での *関羽の水攻め（七軍を水没させる）*、長安での *玄武門の変*、臨安での *岳飛の死*）。カードの右上にある **`Key Events`** のピルをクリックすると大きな出来事のある王朝だけに絞り込め、どの出来事をクリックしてもその年へタイムトラベルできます！
 - **戦略上の峠と、詩・戦場の名所**：*函谷関*、*潼関*、*剣門関*、*雁門関*、*玉門関*、*陽関*、*山海関* などの有名な峠を探索できます。これらは伝統的な *漢闕* の門楼のアイコンと、戦略上の地形のメモとともに描かれます。あわせて、*赤壁*、*垓下*、*五丈原*、*蘭亭*、*岳陽楼*、*滕王閣*、*藍関*、*楼蘭*、*ロプノール*、*イシク・クル* などの有名な戦場と文学の名所もあります。
 
@@ -245,14 +245,14 @@ docker compose up -d --build
 
 ## GeoJSON のエクスポート（Leaflet / MapLibre / QGIS 用）
 
-アプリは、トポロジーの重複を除いたコンパクトな VLQ のバンドルとしてジオメトリを同梱しています。ほかのプロジェクトでベクターのレイヤーを使うには、標準の RFC 7946 GeoJSON（EPSG:4326、lon/lat）をローカルで生成します。出力は `geojson/` に置かれ、コミットはされません。エクスポートの対象は紀元前 403 年から 1948 年までで、それより後の年と現代の省のレイヤーは含まれません。郡 / 州 / 府のレイヤーは CHGIS に由来し、その条件で再配布が禁止されているため、デフォルトでは出力しません。ローカルでの学術・非商用の利用に限り、`--with-prefectures` を付けると出力できます。その結果は公開しないでください。
+アプリは、トポロジーの重複を除いたコンパクトな VLQ のバンドルとしてジオメトリを同梱しています。ほかのプロジェクトでベクターのレイヤーを使うには、標準の RFC 7946 GeoJSON（EPSG:4326、lon/lat）をローカルで生成します。出力は `geojson/` に置かれ、コミットはされません。エクスポートの対象は紀元前 403 年から 1948 年までで、それより後の年と現代の省のレイヤーは含まれません。郡 / 州 / 府のレイヤーはこの配布から除かれており、`--with-prefectures` は拒否されます。
 
 ```bash
 node scripts/export_geojson.js            # or: node scripts/export_geojson.js <outDir>
-node scripts/export_geojson.js --with-prefectures   # adds the CHGIS-derived prefecture layer (local academic use only)
+# --with-prefectures is rejected: CHGIS prefecture boundaries are not in this distribution
 ```
 
-- `snapshots/<id>.geojson` — 領土の時期ごとに 1 ファイルです。各フィーチャーには `bbox` と `layer`（`polity` / `region`。`--with-prefectures` を付けたときは `prefecture` も）、`title`、`title_en`、`category`、`tint`、`anchor` があります。
+- `snapshots/<id>.geojson` — 領土の時期ごとに 1 ファイルです。各フィーチャーには `bbox` と `layer`（`polity` / `region`）、`title`、`title_en`、`category`、`tint`、`anchor` があります。郡州府レイヤーは含みません。
 - `index.json` — すべての王朝の時期と、その `from` / `to` の年（負の値 = 紀元前、0 年はなし）、対応するスナップショットのファイルです。
 - `corridors.geojson`（長城、運河、道路、航路）、`settlements.geojson`、`milestones.geojson`、`neighbors.geojson`、そして `modern/`（河川、湖、水系のラベル。`appear` / `vanish` は、歴史上の河道や湖が表示される年を示します）。
 
@@ -263,36 +263,37 @@ const atlas = JiangshanLocate.create(); // or create({ base: '<url of geojson/>'
 const hit = await atlas.locate(118.78, 32.06, 1415); // lon, lat, year
 hit.polity.properties.title;     // 明
 hit.region.properties.title;     // 南直隶
-hit.prefecture;                  // null unless exported with --with-prefectures (then 应天府)
+hit.prefecture;                  // null: this distribution does not include prefecture polygons
 ```
 
-エクスポートした後、リポジトリを配信し（`python3 -m http.server 8000`）、`http://localhost:8000/geojson/demo.html` を開くと Leaflet の例を見られます。年のスライダーをドラッグしたり、地図をクリックしたり、`demo.html?year=1415&lon=118.78&lat=32.06` を開いて自動で読み込み、強調表示、ズームさせたりできます。歴史上の国境は概略的な近似であり、測量された境界ではありません。データは GPL-3.0 ですが、郡 / 州 / 府レベルの境界は例外です。[データの出典とライセンス](#データの出典とライセンス)をご覧ください。
+エクスポートした後、リポジトリを配信し（`python3 -m http.server 8000`）、`http://localhost:8000/geojson/demo.html` を開くと Leaflet の例を見られます。年のスライダーをドラッグしたり、地図をクリックしたり、`demo.html?year=1415&lon=118.78&lat=32.06` を開いて自動で読み込み、強調表示、ズームさせたりできます。歴史上の国境は概略的な近似であり、測量された境界ではありません。書き出したデータは GPL-3.0 です。郡 / 州 / 府レベルの境界は含みません。[データの出典とライセンス](#データの出典とライセンス)をご覧ください。
 
 ---
 
 ## データの出典とライセンス
 
-コードとこのプロジェクトが作成したデータは **GPL-3.0** で公開しています。例外は 1 つだけで、CHGIS に由来する郡 / 州 / 府レベルの境界は、CHGIS 自身の条件に従います。
+コードとこのプロジェクトが作成したデータは **GPL-3.0** で公開しています。下表はリポジトリで確認できる根拠の記録であり、残るすべての環について法的な結論を出すものではありません。
 
 | レイヤー | 出典 | ライセンス |
 | :-- | :-- | :-- |
 | コード（アプリ、スクリプト、CLI、MCP サーバー） | このプロジェクト | GPL-3.0 |
-| 政権の領域（`polity`） | [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)（GPL-3.0）をもとに、史書に照らして手作業で描き直したもの | GPL-3.0 |
-| 第一級行政区画（`region`：刺史部 / 道 / 路 / 省 など） | 史書にもとづき手作業で作成。初期版の出典は記録されていません | GPL-3.0 |
-| **郡 / 州 / 府レベルの境界**（`prefecture`、戦国と秦の郡を含む） | **CHGIS V6** と **Robert M. Hartwell China Historical GIS** に由来し、0.01° に簡略化して手作業で修正 | **GPL-3.0 ではありません**。学術・非商用の利用に限り、再配布は禁止です。下記を参照 |
-| 古地名、主要な出来事、旅程、人物年譜、地名の沿革 | 史書にもとづきこのプロジェクトが整理 | GPL-3.0 |
-| 現代の省界 | DataV GeoAtlas（Alibaba Cloud） | DataV GeoAtlas の条件に従う |
-| 河川、湖、周辺国 | パブリックドメインのデータ | パブリックドメイン |
-| 地形の陰影 | `scripts/build_terrain_tiles.py` が [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/)（パブリックドメインの **SRTM**、**GMTED2010**、**ETOPO1**）から描画。公開しているのは、解像度が 1 ピクセルあたり約 1 km より細かくない陰影画像だけです | GPL-3.0（画像） |
+| このリポジトリで編集した政権領域（`data/atlas`） | [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps) を出発点に、その後このリポジトリで編集した。要素ごとの出典はない。CHGIS と一致する環がある。類似比率はライセンス判断ではない | **編集済み座標は公開バンドルに入れない。** 手描きとは書かない |
+| 上流 historical-basemaps の原図 | André Ourednik、コミット `4b5039e50d8d2464b065bd76ad6086cd4597108d`、GPL-3.0。作者はデータのライセンスを問う [issue #3](https://github.com/aourednik/historical-basemaps/issues/3) で LICENSE を追加した。[issue #74](https://github.com/aourednik/historical-basemaps/issues/74) にメンテナの返信はなく、そのライセンスを取り消さない。`docs/historical-basemaps-license.md` を参照 | **`js/historical_basemap.js` として公開。** 原図は、そのファイル自身の年にだけ描く。年をまたぐ適用区間は記録していない。郡・州・府は引き続き非公開 |
+| 第一級行政区画（`region`） | 要素ごとの出典は未記録 | **座標は公開バンドルに入れない。** 手描きとは書かない |
+| **郡 / 州 / 府レベルの境界**（`prefecture`） | 以前は **CHGIS V6** と **Hartwell** に由来。**削除済み**。環全体の複製（魯 = 薛郡）と辺の過半が一致する複製（九原郡）を含む | **同梱しない**。GPL-3.0 ではない。学術・非商用、再配布禁止。[Harvard Dataverse](https://dataverse.harvard.edu/dataverse/chgis_v6) から入手 |
+| 古地名、主要な出来事、旅程、人物年譜、地名の沿革 | このプロジェクトが史書から整理 | GPL-3.0 |
+| 現代の省界 | [DataV GeoAtlas](https://help.aliyun.com/zh/datav/datav-7-0/user-guide/datav-geoatlas-widgets/) は高徳のデータで、学習と交流のみと記しています | **同梱しない**。公開ホストや再配布を許すとは読めません |
+| 以前同梱していた河川・湖・周辺国 | 旧 `js/china_geo_data.js` と `neighbors.geojson` に上流ライセンス URL がない。リポジトリの公有領域という自己申告は確認済みとは扱わない | **この版には入れない。** 公開する下図は Natural Earth 1:50m の陸地・河川・湖（5.1.2、自然地理レイヤのみ）。条項: https://www.naturalearthdata.com/about/terms-of-use/ |
+| 地形の陰影 | `scripts/build_terrain_tiles.py` は SRTM、Copernicus GLO-90、AWS Terrain Tiles のいずれも入力候補にしている。タイルごとに出典が記録されていない | **この版には入れない。** ページは `assets/terrain/` を要求しない |
 | 古琴の音声 | Wikimedia Commons（*流水*、*平沙落雁*、*陽関三畳*、*酔漁唱晩*、*酒狂*） | パブリックドメイン |
 
 **参考文献（データの出典ではありません）**：境界は、史書と譚其驤の *The Historical Atlas of China*（谭其骧主编《中国历史地图集》）に照らして確認しています。この地図集の画像やデータは、このリポジトリには含まれていません。
 
-**郡 / 州 / 府レベルの境界（CHGIS）**：このレイヤーは GPL-3.0 の対象外で、このサイトでの非商用・教育目的の表示に使っています。このリポジトリから再公開しないでください。郡州府の境界が必要な場合は、CHGIS の公式配布元（Harvard Dataverse）から、その条件に従って入手してください。`scripts/export_geojson.js` は、`--with-prefectures` を付けて実行しない限り、このレイヤーを出力しません。引用形式：*CHGIS, Version: 6. © Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.* 出典の詳細は [data/atlas/README.md](data/atlas/README.md) をご覧ください。
+**郡 / 州 / 府レベルの境界（CHGIS）**：このレイヤーはソース、バンドル、GeoJSON 書き出しのいずれにも含まれず、GPL-3.0 の対象外です。戻さないでください。必要な場合は CHGIS の公式配布元（Harvard Dataverse）から、その条件に従って入手してください。`scripts/export_geojson.js` は `--with-prefectures` を拒否します。公式コピーの引用形式：*CHGIS, Version: 6. © Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.* 出典の詳細は [data/atlas/README.md](data/atlas/README.md) をご覧ください。
 
 **おおよその境界**：この地図の歴史上の領域と行政境界は、おおまかな管轄を示す概略的な近似です。科学的な測量によるものではなく、正確な、あるいは権威ある境界として引用しないでください。
 
-**このプロジェクトの再利用**：GPL-3.0 のレイヤーを再利用するときは、https://github.com/DeanChensj/jiangshan-map へのリンクとともに **江山时序 Jiangshan Atlas** のクレジットを記し、上に挙げた出典も引用してください。郡州府レイヤーが写っているスクリーンショットにも、CHGIS の条件が適用されます。
+**このプロジェクトの再利用**：GPL-3.0 のレイヤーを再利用するときは、https://github.com/DeanChensj/jiangshan-map へのリンクとともに **江山时序 Jiangshan Atlas** のクレジットを記し、上に挙げた出典も引用してください。
 
 **権利者の方へ**：このリポジトリの内容について権利をお持ちで、不適切な利用だとお考えの場合は、[issue](https://github.com/DeanChensj/jiangshan-map/issues) でお知らせください。確認のうえ対応し、必要に応じて削除します。
 

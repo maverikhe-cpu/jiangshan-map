@@ -41,15 +41,15 @@
 
 ---
 
-### 玩法一：拉動時間軸看天下分合、查在位帝王、比古今省界
+### 玩法一：拉動時間軸看天下分合、查在位帝王
 
-- **同屏看多政權對峙**：從戰國七雄（秦、楚、齊、燕、趙、魏、韓）與周、越、巴蜀、中山、義渠並立，到漢末三國群雄割據（袁紹、曹操、劉備、孫權、公孫氏遼東），再到南北朝、五代十國與宋、遼、西夏、大理、金、蒙古，都以高對比度宣紙設色同屏呈現。滑鼠移到左下角圖例的政權名字上，對應政權立刻高亮；點一下直接聚焦過去。
+- **同屏看多政權對峙**：本發行版仍保留的政權輪廓以高對比度宣紙設色同屏呈現。戰國七雄、周、越、巴蜀、中山、義渠，以及公孫氏遼東等若干早期輪廓不在本發行版中。滑鼠移到左下角圖例裡仍在的政權名字上，對應政權立刻高亮；點一下直接聚焦過去。
 - **多階段疆域演進與「虛線殘影」對比**：每一個重大開疆或失地節點——如前 316 年司馬錯滅巴蜀、前 300 年燕將秦開破東胡闢遼東五郡、43 年馬援平交趾立銅柱、238 年司馬懿平公孫淵收遼東、635 年李靖平吐谷渾、648 年置安西四鎮與王玄策破中天竺、1288 年元設宣政院直轄西藏、1404 年明置哈密衛與關西七衛、1643 年大順大西起兵、1673 年三藩之亂、1881 年曾紀澤簽《中俄伊犁條約》收復伊犁、1898 年列強強租膠州灣/旅大/威海衛/九龍新界，乃至 1945 年抗戰勝利臺灣光復（“秋海棠”重光）與 1946 年外蒙古獨立（版圖由**“秋海棠”變為“雄雞”**）——點選編年事件或階段圓點，版圖即刻切換並浮現上一階段的朱砂虛線殘影，盈虧得失一目了然。
 - **當朝在位帝王與年號同步顯示**：時間軸即時內嵌顯示當年在位君主（廟號 / 諡號 + 姓名 + 在位起止年，如 `漢武帝 劉徹`、`唐太宗 李世民`、`清聖祖 玄燁`）及歷代年號紀年。
-- **歷代州府懸停即查 & 古今透視鏡**：一級政區採用拓撲去重與宣紙襯底雙重描邊（Parchment Casing）；放大地圖懸停任意州郡（如明代的「應天府」「順天府」、三國的「荊州」）即可查看政區歸屬與今省對照，還可開啟 **「透視鏡」** 在古輿圖上直接投射現代省界。
+- **仍隨發行版發布的歷史政區**：保留下來的一級政區用拓撲去重的宣紙襯底描邊。郡州府多邊形和現代省界不在本發行版中，因此沒有「透視鏡」，也不能再懸停「應天府」這類府級多邊形。
 - **水系古澤與千年工程隨年代流轉**：拉動時間軸時，黃河歷代改道、雲夢澤與羅布泊（蒲昌海）等古湖消長，以及戰國秦漢明長城、隋唐與京杭大運河、絲綢之路、鄭和航線均隨當朝版圖同步演進。
 
-> [點選直達：大明永樂十三年（1415 年）· 兩京十三布政使司與「應天府」府境探查 →](https://deanchen.me/jiangshan-map/?year=1415&zoom=1.75&center=115.8,33.2&hover=%E5%BA%94%E5%A4%A9%E5%BA%9C)
+> [點選直達：大明永樂十三年（1415 年），地圖中心在南京 →](https://deanchen.me/jiangshan-map/?year=1415&zoom=1.75&center=115.8,33.2)
 
 ![明永樂十三年（1415 年）· 應天府政區懸停預覽](assets/preview_1415_ming_yingtian.webp)
 
@@ -58,7 +58,7 @@
 ### 玩法二：點開任意一座城或名關，讀它兩千四百年的身世與風雲
 
 在地圖上**直接點選任意古城、名關**（或者雙擊地圖任意位置），就會展開一張 **「點地溯源」** 卡片：
-- **名城風華題記與古今政區沿革**：卡片頂部呈現該城專屬的**名城判詞與千年歷史小傳**；下方沿革表從戰國七雄與秦朝的郡、漢朝的刺史部、唐朝的道、宋朝的路，一路看到元明清的行省與府州，直至現代省市；哪幾個朝代曾在此建都（`王朝都城` 徽章）與各朝代治所掌故一目了然。
+- **名城風華題記與古今政區沿革**：卡片頂部呈現該城專屬的**名城判詞與千年歷史小傳**；下方沿革表從仍發布的政區讀起。本發行版不含郡州府多邊形，也不含現代省界，當代一行只標出最近的古城；哪幾個朝代曾在此建都（`王朝都城` 徽章）與各朝代治所掌故一目了然。
 - **看這裡發生過什麼大事**：每個朝代行下方直接內嵌當年發生在此地的**定點地標大事**（如咸陽的「商鞅變法」「秦王掃六合」、樊城的「關羽水淹七軍」、長安的「玄武門之變」、臨安的「風波亭岳飛蒙難」）。點一下右上角的 **「史事紀要」** 膠囊，還能一鍵篩出有大事發生的朝代；點選任意一條事件，時間軸和地圖版圖立即穿越回那一年！
 - **探訪天下名關與詩詞名勝**：地圖以專屬漢闕城樓圖示標出函谷關、潼關、劍門關、雁門關、玉門關、陽關、山海關等**天下雄關**（附山脈水系扼守形勢詳解），並收錄赤壁、垓下、五丈原、蘭亭、岳陽樓、滕王閣、藍關、樓蘭、蒲昌海（羅布泊）、熱海（伊塞克湖）等**詩詞名勝與古戰場**，支援直接檢索落針。
 
@@ -243,14 +243,14 @@ docker compose up -d --build
 
 ## GeoJSON 匯出（供 Leaflet / MapLibre / QGIS 使用）
 
-程式內建的幾何資料是拓撲去重的 VLQ 緊湊編碼。如需在其他專案中使用向量圖層，可在本機產生標準 RFC 7946 GeoJSON（EPSG:4326，經度/緯度），輸出到 `geojson/`，不納入版本庫。匯出範圍為西元前 403 年至 1948 年，不含此後年份及現代省界圖層。郡 / 州 / 府圖層源自 CHGIS，其條款禁止再分發，因此預設不匯出；如需在本機做學術、非商業用途，可加 `--with-prefectures` 參數匯出，匯出結果請勿公開發布：
+程式內建的幾何資料是拓撲去重的 VLQ 緊湊編碼。如需在其他專案中使用向量圖層，可在本機產生標準 RFC 7946 GeoJSON（EPSG:4326，經度/緯度），輸出到 `geojson/`，不納入版本庫。匯出範圍為西元前 403 年至 1948 年，不含此後年份及現代省界圖層。郡 / 州 / 府圖層已從本發行版移除，`--with-prefectures` 會直接拒絕：
 
 ```bash
 node scripts/export_geojson.js            # 或：node scripts/export_geojson.js <輸出目錄>
-node scripts/export_geojson.js --with-prefectures   # 附帶源自 CHGIS 的郡州府圖層（僅限本機學術用途）
+# --with-prefectures 已停用：本發行版不含 CHGIS 郡州府邊界
 ```
 
-- `snapshots/<id>.geojson`：每個疆域階段一個檔案；每個要素帶 `bbox`，屬性含 `layer`（`polity` 政權 / `region` 一級政區；加 `--with-prefectures` 時另含 `prefecture` 州郡）、`title`、`title_en`、`category`、`tint`、`anchor`。
+- `snapshots/<id>.geojson`：每個疆域階段一個檔案；每個要素帶 `bbox`，屬性含 `layer`（`polity` 政權 / `region` 一級政區）、`title`、`title_en`、`category`、`tint`、`anchor`。不含郡州府圖層。
 - `index.json`：各朝代階段的起止年份 `from` / `to`（負數為西元前，無西元 0 年）及對應快照檔案。
 - `corridors.geojson`（長城、運河、道路、海路）、`settlements.geojson`、`milestones.geojson`、`neighbors.geojson`，以及 `modern/`（河流、湖泊、水系註記；`appear` / `vanish` 表示古河道與古湖泊顯示的起止年份）。
 
@@ -261,36 +261,37 @@ const atlas = JiangshanLocate.create(); // 或 create({ base: '<geojson/ 目錄�
 const hit = await atlas.locate(118.78, 32.06, 1415); // 經度, 緯度, 年份
 hit.polity.properties.title;     // 明
 hit.region.properties.title;     // 南直隸
-hit.prefecture;                  // 預設為 null；加 --with-prefectures 匯出時為 應天府
+hit.prefecture;                  // 恆為 null：本發行版不含郡州府多邊形
 ```
 
-匯出後啟動本機服務（`python3 -m http.server 8000`），開啟 `http://localhost:8000/geojson/demo.html` 即可查看 Leaflet 範例：拖動年份滑塊、點選地圖，或開啟 `demo.html?year=1415&lon=118.78&lat=32.06` 自動載入、高亮並縮放到該處。歷史疆域為示意性近似，並非測繪邊界。資料採用 GPL-3.0 授權，郡 / 州 / 府級邊界除外，詳見[資料來源與授權](#資料來源與授權)。
+匯出後啟動本機服務（`python3 -m http.server 8000`），開啟 `http://localhost:8000/geojson/demo.html` 即可查看 Leaflet 範例：拖動年份滑塊、點選地圖，或開啟 `demo.html?year=1415&lon=118.78&lat=32.06` 自動載入、高亮並縮放到該處。歷史疆域為示意性近似，並非測繪邊界。匯出資料採用 GPL-3.0。郡 / 州 / 府級邊界不在其中，詳見[資料來源與授權](#資料來源與授權)。
 
 ---
 
 ## 資料來源與授權
 
-程式碼和本專案自行整理的資料均採用 **GPL-3.0**。只有一層例外：源自 CHGIS 的郡 / 州 / 府級邊界，仍受 CHGIS 原始條款約束。
+程式碼和本專案自行整理的資料均採用 **GPL-3.0**。下表只記錄倉庫裡能核對到的證據，不是對每一條剩餘邊界的法律結論。
 
 | 圖層 | 來源 | 授權 |
 | :-- | :-- | :-- |
 | 程式碼（頁面、腳本、CLI、MCP 服務） | 本專案 | GPL-3.0 |
-| 政權疆域輪廓（`polity`） | 以 [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)（GPL-3.0）為起點，此後依據史籍手工重繪 | GPL-3.0 |
-| 一級政區（`region`：刺史部 / 道 / 路 / 省等） | 依據史籍手工繪製；早期版本的原始來源未記錄 | GPL-3.0 |
-| **郡 / 州 / 府級邊界**（`prefecture`，含戰國與秦的郡） | 源自 **CHGIS V6** 與 **Robert M. Hartwell China Historical GIS**，簡化至 0.01° 並經手工調整 | **不適用 GPL-3.0**。僅限學術、非商業用途，不得再分發，詳見下文 |
+| 本倉庫改過的政權輪廓（`data/atlas`） | 以 [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps) 為起點，隨後在本倉庫裡改過。沒有逐條來源。有的環與 CHGIS 相同。相似比例不是許可判斷 | **這些改過的座標不進入公開包。** 不稱為手繪 |
+| 上游 historical-basemaps 整幅 | André Ourednik，提交 `4b5039e50d8d2464b065bd76ad6086cd4597108d`，GPL-3.0。作者在被問到資料許可的 [issue #3](https://github.com/aourednik/historical-basemaps/issues/3) 中加入 LICENSE。[issue #74](https://github.com/aourednik/historical-basemaps/issues/74) 沒有維護者答覆，不取消該許可證。見 `docs/historical-basemaps-license.md` | **公開為 `js/historical_basemap.js`。** 只在源圖自己的年份繪製。沒有記錄跨年適用區間。郡州府仍不發布 |
+| 一級政區（`region`：刺史部 / 道 / 路 / 省等） | 沒有逐條來源記錄 | **座標不進入公開包。** 不稱為手繪 |
+| **郡 / 州 / 府級邊界**（`prefecture`） | 曾源自 **CHGIS V6** 與 **Hartwell China Historical GIS**。**本發行版已移除**，含整環副本（如魯 = 薛郡）和邊數過半的副本（如九原郡） | **不隨本倉庫發布**。不適用 GPL-3.0。學術、非商業、不得再分發。請向 [Harvard Dataverse](https://dataverse.harvard.edu/dataverse/chgis_v6) 取得 |
 | 古地名、重大事件、行跡路線、人物年譜、地名沿革 | 本專案依據史籍整理 | GPL-3.0 |
-| 現代省界 | DataV GeoAtlas（阿里雲） | 以 DataV GeoAtlas 條款為準 |
-| 河流、湖泊、周邊國家 | 公有領域資料 | 公有領域 |
-| 地形暈渲 | 由 `scripts/build_terrain_tiles.py` 基於 [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/)（公有領域的 **SRTM**、**GMTED2010**、**ETOPO1**）渲染；倉庫只發布最細約 1 km/像素的暈渲圖片 | GPL-3.0（圖片） |
+| 現代省界 | [DataV GeoAtlas](https://help.aliyun.com/zh/datav/datav-7-0/user-guide/datav-geoatlas-widgets/) 寫明資料來自高德，僅供學習和交流 | **不隨本倉庫發布**。該條款不能證明可以公開託管或再分發 |
+| 原先打包的河流、湖泊、周邊國家 | `js/china_geo_data.js` 舊座標和 `neighbors.geojson` 沒有上游許可連結。倉庫自述公有領域，不能當成已經核驗 | **本發行版不發布。** 公開底圖是 Natural Earth 1:50m 陸地、河流、湖泊（5.1.2，僅自然地理層）。條款：https://www.naturalearthdata.com/about/terms-of-use/ |
+| 地形暈渲 | `scripts/build_terrain_tiles.py` 把 SRTM、Copernicus GLO-90 或 AWS Terrain Tiles 都寫成可能的輸入。成品沒有逐張記錄用了哪一個 | **本發行版不發布。** 頁面不請求 `assets/terrain/` |
 | 古琴錄音 | Wikimedia Commons（《流水》《平沙落雁》《陽關三疊》《醉漁唱晚》《酒狂》） | 公有領域 |
 
 **參考資料（非資料來源）**：邊界依據史籍並參照譚其驤主編《中國歷史地圖集》核對。本倉庫不包含該圖集的任何圖像或資料。
 
-**郡 / 州 / 府級邊界（CHGIS）**：該圖層不適用 GPL-3.0，僅用於本站非商業的科普展示。請勿從本倉庫轉載或再分發；如需郡州府邊界，請從 CHGIS 官方管道（Harvard Dataverse）按其條款獲取。`scripts/export_geojson.js` 預設不匯出該圖層，加 `--with-prefectures` 參數才會匯出。引用格式：*CHGIS, Version: 6. © Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.* 資料來源細節見 [data/atlas/README.md](data/atlas/README.md)。
+**郡 / 州 / 府級邊界（CHGIS）**：該圖層不在本發行版的源資料、打包腳本或 GeoJSON 匯出中，不適用 GPL-3.0。請勿加回。如需郡州府邊界，請從 CHGIS 官方管道（Harvard Dataverse）按其條款獲取。`scripts/export_geojson.js` 拒絕 `--with-prefectures`。官方副本的引用格式：*CHGIS, Version: 6. © Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.* 資料來源細節見 [data/atlas/README.md](data/atlas/README.md)。
 
 **近似邊界**：地圖中的歷史疆域與政區邊界為示意性近似，用於直觀呈現各時期大致的管轄範圍，並非測繪成果，請勿作為精確或權威的邊界依據引用。
 
-**轉載與復用**：復用 GPL-3.0 圖層時，請註明「江山時序 Jiangshan Atlas」並附 https://github.com/DeanChensj/jiangshan-map ，同時註明上文所列原始來源。含郡州府圖層的截圖同樣受 CHGIS 條款約束。
+**轉載與復用**：復用 GPL-3.0 圖層時，請註明「江山時序 Jiangshan Atlas」並附 https://github.com/DeanChensj/jiangshan-map ，同時註明上文所列原始來源。
 
 **權利人聯絡**：如果您是本倉庫中某項內容的權利人，認為使用不當，請[提交 issue](https://github.com/DeanChensj/jiangshan-map/issues)，我們會及時回覆，必要時刪除。
 

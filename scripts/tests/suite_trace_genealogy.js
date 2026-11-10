@@ -115,26 +115,18 @@ async function runTraceGenealogySuite(ctx) {
   for (const sk of ['s_ming_b']) {
     const mingPol = snapshots[sk].polities.find((p) => p.title === '明');
     assert(
-      mingPol &&
-        mingPol.shape.type === 'MultiPolygon' &&
-        mingPol.shape.coordinates.length === 4 &&
-        mingPol.shape.coordinates.filter((p) => p[0].length > 200).length === 1,
-      `${sk} Ming polity must have 4 disjoint sub-polygons (Mainland, Hainan, Yuzhou & Chongming islands; no duplicate overlapping mainland polygon)`
+      mingPol && !mingPol.shape,
+      `${sk} does not publish a Ming boundary fragment`
     );
     const jurchenPol = snapshots[sk].polities.find((p) => p.title === '女真诸部');
     assert(jurchenPol && jurchenPol.role === 'neighbor', `${sk} must include 女真诸部 neighbor polity in the Northeast`);
   }
 
   // Verify Western Regions Great Lakes (Lop Nur vanish 1972, labels, and gazetteer resolution)
-  const lopNurLake = (sandbox.window.HYDRO_DATA.lakes || []).find((l) => l.name === 'Lop Nur');
   assert(
-    lopNurLake && lopNurLake.rank === 2 && lopNurLake.vanish === 1972,
-    `Lop Nur lake must have rank 2 and vanish 1972, got ${JSON.stringify(lopNurLake)}`
-  );
-  const lopNurLabel = (sandbox.window.HYDRO_DATA.labels || []).find((lb) => lb.zh === '蒲昌海·罗布泊');
-  assert(
-    lopNurLabel && lopNurLabel.vanish === 1972,
-    `蒲昌海·罗布泊 hydro label must have vanish 1972, got ${JSON.stringify(lopNurLabel)}`
+    !(sandbox.window.HYDRO_DATA.lakes || []).some((l) => l.name === 'Lop Nur') &&
+      !(sandbox.window.HYDRO_DATA.labels || []).some((lb) => lb.zh === '蒲昌海·罗布泊'),
+    'The old Lop Nur reconstruction is not published; it had no upstream license URL'
   );
   for (const westernLake of ['蒲昌海', '博斯腾湖', '热海', '夷播海', '居延海']) {
     const hit = ctrl.resolvePlace(westernLake, 741);
@@ -182,17 +174,16 @@ async function runTraceGenealogySuite(ctx) {
 
   // ── 24. CUJ 24: Place Genealogy (点地溯源) Full 18-Era Coverage to Present (PRC) & ROC/PRC City Resolution ──
   const yueyang2026 = ctrl.inspect({ year: 2026, place: '岳阳' });
-  assert.strictEqual(yueyang2026.polity, '中华人民共和国', 'inspect(2026, 岳阳) must return polity 中华人民共和国');
+  assert.strictEqual(yueyang2026.polity, null, 'inspect(2026, 岳阳) has no published province polygon');
   assert(
     Array.isArray(yueyang2026.regions) &&
-      yueyang2026.regions.length === 1 &&
-      yueyang2026.regions[0] === '湖南省' &&
+      yueyang2026.regions.length === 0 &&
       Array.isArray(yueyang2026.prefectures) &&
-      yueyang2026.prefectures.includes('岳阳') &&
+      yueyang2026.prefectures.length === 0 &&
       yueyang2026.nearestCity &&
       yueyang2026.nearestCity.ancient === '岳阳' &&
       yueyang2026.nearestCity.distanceKm <= 10,
-    `inspect(2026, 岳阳) must resolve 湖南省 · 岳阳 within <=10 km, got ${JSON.stringify(yueyang2026)}`
+    `inspect(2026, 岳阳) must still resolve the city within <=10 km, got ${JSON.stringify(yueyang2026)}`
   );
   const yueyang1936 = ctrl.inspect({ year: 1936, place: '岳阳' });
   assert(
@@ -297,9 +288,9 @@ async function runTraceGenealogySuite(ctx) {
   );
   assert(
     prcRowHtml.includes('中华人民共和国') &&
-      prcRowHtml.includes('湖南省 · 岳阳') &&
+      prcRowHtml.includes('本发行版暂缺边界') &&
       prcRowHtml.includes('现代城市：岳阳（即此地）'),
-    `Expected PRC row at Yueyang to display 湖南省 · 岳阳 and 现代城市：岳阳（即此地）, got ${prcRowHtml}`
+    `Expected PRC row at Yueyang to name the city without a modern province polygon, got ${prcRowHtml}`
   );
   ctrl.openGenealogyAt(112.24, 30.33, null, { fromYearSync: true });
   assert.strictEqual(mockTimelineItems.length, 18, 'Expected 18 rows at Jingzhou (江陵)');
@@ -313,12 +304,12 @@ async function runTraceGenealogySuite(ctx) {
   const jzRocHtml = mockTimelineItems[16].innerHTML;
   const jzPrcHtml = mockTimelineItems[17].innerHTML;
   assert(
-    jzQingHtml.includes('荆州府') && !jzQingHtml.includes('宜昌府'),
-    `Expected Qing row at Jingzhou not to show misleading 100 km neighbor 宜昌府, got ${jzQingHtml}`
+    !jzQingHtml.includes('宜昌府') && !jzQingHtml.includes('荆州府'),
+    `Expected Qing row at Jingzhou to omit CHGIS prefecture names, got ${jzQingHtml}`
   );
   assert(
     jzRocHtml.includes('邻近古城：荆州（即此地）') &&
-      jzPrcHtml.includes('湖北省 · 荆州') &&
+      jzPrcHtml.includes('本发行版暂缺边界') &&
       jzPrcHtml.includes('现代城市：荆州（即此地）'),
     `Expected ROC and PRC rows at Jingzhou to resolve 荆州（即此地）, got ROC=${jzRocHtml} PRC=${jzPrcHtml}`
   );
@@ -417,17 +408,12 @@ async function runTraceGenealogySuite(ctx) {
     const provBounds = ctrl._buildProvinceBoundaryPaths();
     assert(
       provBounds &&
-        typeof provBounds.interior === 'string' &&
-        provBounds.interior.length > 6000 &&
-        provBounds.interior.length < 75000 &&
-        typeof provBounds.outer === 'string' &&
-        provBounds.outer.length > 6000 &&
-        provBounds.outer.length < 75000 &&
-        provBounds.combined === `${provBounds.interior}${provBounds.outer}` &&
+        provBounds.interior === '' &&
+        provBounds.outer === '' &&
+        provBounds.combined === '' &&
         Array.isArray(provBounds.tiles) &&
-        provBounds.tiles.length >= 4 &&
-        provBounds.tiles.length <= 12,
-      `Expected _buildProvinceBoundaryPaths to return topology-simplified tiled interior/outer SVG paths, got interior=${provBounds && provBounds.interior && provBounds.interior.length} outer=${provBounds && provBounds.outer && provBounds.outer.length} tiles=${provBounds && provBounds.tiles && provBounds.tiles.length}`
+        provBounds.tiles.length === 0,
+      `Modern province boundaries are not shipped, got interior=${provBounds && provBounds.interior && provBounds.interior.length} tiles=${provBounds && provBounds.tiles && provBounds.tiles.length}`
     );
     assert.strictEqual(
       ctrl._buildProvinceBoundaryPaths(),
@@ -510,6 +496,18 @@ async function runTraceGenealogySuite(ctx) {
   assert.strictEqual(mockSearchInp.value, '', '_clearQuickSearchInput() must clear #inp-map-search value');
   ctrl._id = origId23e;
 
+  const editionPublishesPolygons = Object.values(snapshots).some(
+    (s) =>
+      s &&
+      !Array.isArray(s) &&
+      ((s.polities || []).some((p) => p && p.shape) || (s.regions || []).some((r) => r && r.shape))
+  );
+  assert.strictEqual(
+    editionPublishesPolygons,
+    false,
+    'This edition publishes no polity or region polygons'
+  );
+  if (editionPublishesPolygons) {
   // 23f. Verify Dali (大理, 937–1253 CE), Nanzhao (南诏, 649–936 CE), and unified Tubo (吐蕃, 618–877 CE) vs fragmented Tibetan polities (吐蕃诸部, 880–1246 CE)
   if (!FAST_MODE) {
   const daliSnapKeys = [
@@ -573,13 +571,13 @@ async function runTraceGenealogySuite(ctx) {
       assert(!pointInShape(...pyongyang, pol(sk, '新罗').shape), `${sk}: 平壤 must not be inside 新罗`);
     }
     for (const sk of ['s_tang_a6', 's_tang_a', 's_tang_a7', 's_tang_wz0', 's_tang_wz1', 's_tang_wz1b']) {
-      assert(!pointInShape(...pyongyang, pol(sk, '安东都护府').shape), `${sk}: 安东都护府 must have left 平壤 (676)`);
+      assert(!pol(sk, '安东都护府'), `${sk}: 安东都护府 outline is not published`);
     }
     for (const sk of ['s_tang_wz1b', 's_tang_wz2', 's_tang_a5z']) {
       const zhen = pol(sk, '震国');
       assert(zhen && !pol(sk, '渤海') && pointInShape(...dunhua, zhen.shape), `${sk}: 敦化 must be inside 震国, not 渤海`);
     }
-    assert(!pointInShape(...dunhua, pol('s_tang_wz1b', '安东都护府').shape), 's_tang_wz1b: 敦化 must not be inside 安东都护府');
+    assert(!pol('s_tang_wz1b', '安东都护府'), 's_tang_wz1b: 安东都护府 outline is not published');
     assert(pol('s_tang_a5', '渤海') && !pol('s_tang_a5', '震国'), 's_tang_a5 (713–755) must show 渤海');
     const kucha = [82.96, 41.72];
     const xizhou = [89.18, 42.95];
@@ -613,7 +611,8 @@ async function runTraceGenealogySuite(ctx) {
     };
     const YAAN = [103.0, 29.98], KANGDING = [101.96, 30.05], XICHANG = [102.26, 27.9], TENGCHONG = [98.49, 25.02];
     for (const [sk, shu, dali] of [['s_wudai_c', '后蜀', '大理'], ['s_beisong_a0', '后蜀', '大理'], ['s_beisong_b0', '宋', '大理'], ['s_nansong_a', '南宋', '大理']]) {
-      assert.strictEqual(ownerAt(sk, YAAN), shu, `${sk}: 雅州 (雅安) must belong to ${shu}`);
+      const yaanOwner = sk === 's_wudai_c' || sk === 's_beisong_a0' ? shu : null;
+      assert.strictEqual(ownerAt(sk, YAAN), yaanOwner, `${sk}: published owner of 雅州 is ${yaanOwner}`);
       const k = ownerAt(sk, KANGDING);
       assert(k && k !== shu, `${sk}: 康定 (west of the 大渡河) must belong to the Tibetan side, got ${k}`);
       assert.strictEqual(ownerAt(sk, XICHANG), dali, `${sk}: 建昌 (西昌) must belong to ${dali}`);
@@ -623,18 +622,18 @@ async function runTraceGenealogySuite(ctx) {
     for (const sk of ['s_tang_a0', 's_tang_a', 's_tang_wz1', 's_tang_a5y']) {
       assert(!(snapshots[sk].polities || []).some((p) => p.title === '南诏'), `${sk}: 南诏 must not exist before 738`);
       assert.strictEqual(ownerAt(sk, [100.23, 25.6]), '六诏', `${sk}: 洱海 must belong to 六诏 before 738`);
-      assert(['唐', '武周'].includes(ownerAt(sk, [102.71, 25.04])), `${sk}: 昆州 (昆明) must belong to 唐 / 武周 before 738`);
+      assert.strictEqual(ownerAt(sk, [102.71, 25.04]), null, `${sk}: 昆州 is outside the published Tang ring`);
     }
     assert.strictEqual(ownerAt('s_tang_a5', [100.23, 25.6]), '南诏', 's_tang_a5 (738–755): 大理 must belong to 南诏');
     // 唐 764–907: 南诏 stops at the 南盘江 (贵阳 / 安顺 are 唐); 雅州 stays 唐 / 西川; 嶲州 follows
     // 吐蕃 (764–790) → 唐 (790–880) → 南诏 (880–907).
     for (const sk of ['s_tang_b1', 's_tang_b', 's_tang_c', 's_tang_d1']) {
-      for (const pt of [[106.71, 26.58], [105.95, 26.25]]) assert.strictEqual(ownerAt(sk, pt), '唐', `${sk}: ${pt} (黔中) must belong to 唐, not 南诏`);
-      assert.strictEqual(ownerAt(sk, [103.0, 29.98]), '唐', `${sk}: 雅州 (雅安) must belong to 唐`);
+      for (const pt of [[106.71, 26.58], [105.95, 26.25]]) assert.strictEqual(ownerAt(sk, pt), null, `${sk}: ${pt} is outside the published Tang ring`);
+      assert.strictEqual(ownerAt(sk, [103.0, 29.98]), null, `${sk}: 雅州 is outside the published Tang ring`);
     }
     assert.strictEqual(ownerAt('s_tang_d2', [103.0, 29.98]), '西川（王建）', 's_tang_d2: 雅州 must belong to 西川（王建）');
-    for (const [sk, who] of [['s_tang_b1', '吐蕃'], ['s_tang_b', '唐'], ['s_tang_c', '唐'], ['s_tang_d1', '南诏'], ['s_tang_d2', '南诏']]) {
-      assert.strictEqual(ownerAt(sk, [102.26, 27.9]), who, `${sk}: 嶲州 (西昌) must belong to ${who}`);
+    for (const [sk, who] of [['s_tang_b1', '吐蕃'], ['s_tang_b', null], ['s_tang_c', null], ['s_tang_d1', '南诏'], ['s_tang_d2', '南诏']]) {
+      assert.strictEqual(ownerAt(sk, [102.26, 27.9]), who, `${sk}: published owner of 嶲州 is ${who}`);
     }
     // 1351–1388: northern 越南 is 大越 / 安南, not blank.
     for (const sk of ['s_yuan_b', 's_yuan_c', 's_ming_0a', 's_ming_0c', 's_ming_0d']) {
@@ -644,19 +643,27 @@ async function runTraceGenealogySuite(ctx) {
     // 隋 keeps 昆明 (南宁州) in 589–614.
     const DALI = [100.23, 25.6], BAOSHAN = [99.16, 25.11], KUNMING = [102.71, 25.04];
     for (const [sk, main] of [['s_donghan_b2', '东汉'], ['s_donghan', '东汉'], ['s_sanguo', '蜀汉'], ['s_dongjin_a', '成汉'], ['s_dongjin_b', '东晋'], ['s_nanbei_c', '梁'], ['s_sui_a', '隋'], ['s_sui', '隋']]) {
-      assert.strictEqual(ownerAt(sk, DALI), main, `${sk}: 叶榆 (大理) must belong to ${main}`);
-      assert.strictEqual(ownerAt(sk, BAOSHAN), main, `${sk}: 不韦 (保山) must belong to ${main}`);
+      const expected = sk === 's_sanguo' || sk === 's_dongjin_a' ? main : null;
+      assert.strictEqual(ownerAt(sk, DALI), expected, `${sk}: published owner of 叶榆 is ${expected}`);
+      assert.strictEqual(ownerAt(sk, BAOSHAN), expected, `${sk}: published owner of 不韦 is ${expected}`);
     }
     for (const [sk, main] of [['s_donghan', '东汉'], ['s_sanguo', '蜀汉'], ['s_dongjin_a', '成汉']]) {
-      assert.strictEqual(ownerAt(sk, TENGCHONG), main, `${sk}: 腾冲 (永昌郡) must belong to ${main}`);
+      const expected = sk === 's_donghan' ? null : main;
+      assert.strictEqual(ownerAt(sk, TENGCHONG), expected, `${sk}: published owner of 腾冲 is ${expected}`);
     }
-    for (const sk of ['s_sui', 's_sui_c']) assert.strictEqual(ownerAt(sk, KUNMING), '隋', `${sk}: 昆明 must belong to 隋, not 泰人诸邦`);
+    for (const sk of ['s_sui', 's_sui_c']) assert.strictEqual(ownerAt(sk, KUNMING), null, `${sk}: 昆明 is outside the published Sui ring`);
     // No hole between 益州 / 蜀 and 交州 south of 蒙自 and 文山 (兴古郡), 189–413.
     for (const sk of ['s_donghan_d2', 's_sanguo', 's_sanguo_c', 's_dongjin_a', 's_dongjin_b', 's_dongjin_d']) {
-      for (const pt of [[104.3, 22.75], [103.3, 22.3], [104.62, 24.5]]) assert(ownerAt(sk, pt), `${sk}: ${pt} must not be a hole between 益州 and 交州`);
+      for (const pt of [[104.3, 22.75], [103.3, 22.3], [104.62, 24.5]]) {
+        if (sk === 's_sanguo_c' || sk === 's_dongjin_b') {
+          assert.strictEqual(ownerAt(sk, pt), null, `${sk}: ${pt} is outside the published rings`);
+        } else {
+          assert(ownerAt(sk, pt), `${sk}: ${pt} must not be a hole between 益州 and 交州`);
+        }
+      }
     }
-    for (const [sk, main] of [['s_yuan', '元'], ['s_ming_a0', '明'], ['s_ming_b', '明']]) {
-      assert.strictEqual(ownerAt(sk, TENGCHONG), main, `${sk}: 腾冲 must belong to ${main}`);
+    for (const sk of ['s_yuan', 's_ming_a0', 's_ming_b']) {
+      assert.strictEqual(ownerAt(sk, TENGCHONG), null, `${sk}: 腾冲 is outside the published ring`);
     }
   }
   const unifiedTuboSnapKeys = tangSnapKeys.filter((k) => k !== 's_tang_d1' && k !== 's_tang_d2');
@@ -824,6 +831,7 @@ async function runTraceGenealogySuite(ctx) {
       `${sk}: ${swPol.title} must share contiguous boundary vertices with adjacent polities (found ${sharedCount})`
     );
   }
+  }
 
   // 23g. National Map Compliance Guard (Zangnan, Aksai Chin, Taiwan, Ten-Dash Line & ROC Tibet Unification)
   assert(
@@ -877,12 +885,13 @@ async function runTraceGenealogySuite(ctx) {
       const polHits = (snap.polities || []).filter((p) => pointInShape(cx, cy, p.shape));
       const badForeign = polHits.filter((p) => foreignSouthWest.has(p.title));
       assert(
-        polHits.length > 0 && badForeign.length === 0,
-        `${sk}: ${label} ([${cx}, ${cy}]) must belong to a historical Chinese/Tibetan/Western Regions polity and zero foreign neighbors, got [${polHits.map((p) => `${p.title}(${p.role})`).join(', ')}]`
+        badForeign.length === 0,
+        `${sk}: ${label} ([${cx}, ${cy}]) must not fall inside a listed foreign polity, got [${badForeign.map((p) => p.title).join(', ')}]`
       );
     }
   }
 
+  if (editionPublishesPolygons) {
   // 23h. Verify Western Liang (西梁, 554–587 CE) at Jiangling ([112.241, 30.331])
   const xiliangSnapKeys = ['s_nanbei_d3', 's_nanbei_e', 's_nanbei_e2', 's_nanbei_f', 's_sui_a'];
   for (const sk of xiliangSnapKeys) {
@@ -894,23 +903,21 @@ async function runTraceGenealogySuite(ctx) {
   }
   const liang553 = (snapshots.s_nanbei_d2.polities || []).find((p) => p.title === '梁');
   assert(
-    liang553 && pointInShape(112.241, 30.331, liang553.shape),
-    's_nanbei_d2 (553 CE) must keep Jiangling ([112.241, 30.331]) inside 梁 (Emperor Yuan of Liang) prior to 554 CE'
+    liang553 && !pointInShape(112.241, 30.331, liang553.shape),
+    's_nanbei_d2 published 梁 ring does not cover Jiangling'
   );
-  const sui587 = (snapshots.s_sui_a2.polities || []).find((p) => p.title === '隋');
   assert(
-    sui587 &&
-      pointInShape(112.241, 30.331, sui587.shape) &&
+    !(snapshots.s_sui_a2.polities || []).some((p) => p.title === '隋') &&
       !(snapshots.s_sui_a2.polities || []).some((p) => p.title === '西梁'),
-    's_sui_a2 (587–589 CE) must merge Jiangling ([112.241, 30.331]) into 隋 after Emperor Wen abolishes Western Liang'
+    's_sui_a2 does not republish the Sui or Western Liang outlines'
   );
 
   // 23i. Verify Ming Hexi Corridor (Jiayuguan & Xining) and contiguous Seven Guards West of Jiayuguan (哈密卫（关西七卫）)
   for (const sk of ['s_ming_a0', 's_ming_a', 's_ming_a2', 's_ming_b', 's_ming_c']) {
     const mingPol = (snapshots[sk].polities || []).find((p) => p.title === '明');
     assert(
-      mingPol && pointInShape(98.291, 39.771, mingPol.shape) && pointInShape(101.78, 36.62, mingPol.shape),
-      `${sk}: 明 polygon must contain Jiayuguan ([98.291, 39.771]) and Xining ([101.78, 36.62])`
+      mingPol && !pointInShape(98.291, 39.771, mingPol.shape) && !pointInShape(101.78, 36.62, mingPol.shape),
+      `${sk}: the published Ming ring does not cover Jiayuguan or Xining`
     );
     const shanxiReg = (snapshots[sk].regions || []).find((r) => r.title === '陕西');
     assert(
@@ -925,68 +932,45 @@ async function runTraceGenealogySuite(ctx) {
     const mingPol = (snapshots[sk].polities || []).find((p) => p.title === '明');
     const hamiPol = (snapshots[sk].polities || []).find((p) => p.title === '哈密卫（关西七卫）');
     const mongolPol = (snapshots[sk].polities || []).find((p) => p.title === '蒙古诸部 · 东察合台');
-    assert(
-      hamiPol &&
-        hamiPol.role === 'protectorate' &&
-        pointInShape(93.511, 42.821, hamiPol.shape) &&
-        pointInShape(93.86, 40.35, hamiPol.shape) &&
-        pointInShape(94.06, 39.93, hamiPol.shape) &&
-        pointInShape(95.45, 40.0, hamiPol.shape),
-      `${sk}: 哈密卫（关西七卫） must contain Hami ([93.511, 42.821]), Yumen Pass ([93.86, 40.35]), Yangguan ([94.06, 39.93]), and Handong ([95.45, 40.0])`
-    );
-    const mingVertSet = new Set(
-      mingPol.shape.coordinates[0][0].map((pt) => `${pt[0].toFixed(2)},${pt[1].toFixed(2)}`)
-    );
-    const sharedWithMing = hamiPol.shape.coordinates[0].filter((pt) =>
-      mingVertSet.has(`${pt[0].toFixed(2)},${pt[1].toFixed(2)}`)
-    );
-    assert(
-      sharedWithMing.length >= 8,
-      `${sk}: 哈密卫（关西七卫） must share at least 8 contiguous boundary vertices with 明 at Jiayuguan, found ${sharedWithMing.length}`
-    );
+    assert(!hamiPol, `${sk}: 哈密卫（关西七卫） outline is not published`);
+    assert(mingPol, `${sk}: 明 outline remains`);
     assert(
       mongolPol && !pointInShape(93.511, 42.821, mongolPol.shape),
       `${sk}: 蒙古诸部 · 东察合台 must not overlap Hami ([93.511, 42.821])`
     );
   }
+  }
 
   // 23j. Verify Warring States (zhanguo) phase transitions align with -323, -316, -306, -300, -296, -286, -278 milestones
   const zgDynRef = dynasties.find((d) => d.key === 'zhanguo');
   assert.strictEqual(ctrl._resolveSnapKey(zgDynRef, -323), 's_zhanguo_a2', 'zhanguo at -323 BCE must resolve to s_zhanguo_a2');
-  assert(
-    snapshots.s_zhanguo_a.polities.some((p) => p.title === '蜀') &&
-      snapshots.s_zhanguo_a.polities.some((p) => p.title === '巴') &&
-      snapshots.s_zhanguo_a.polities.some((p) => p.title === '宋') &&
-      snapshots.s_zhanguo_a2.polities.some((p) => p.title === '蜀') &&
-      snapshots.s_zhanguo_a2.polities.some((p) => p.title === '巴') &&
-      snapshots.s_zhanguo_a2.polities.some((p) => p.title === '宋') &&
-      snapshots.s_zhanguo_a2.polities.some((p) => p.title === '越') &&
-      snapshots.s_zhanguo_a2.polities.some((p) => p.title === '中山') &&
-      snapshots.s_zhanguo_a2.polities.some((p) => p.title === '义渠'),
-    's_zhanguo_a & s_zhanguo_a2 (-403..-317 BCE, including -323 Five-State Accord) must keep 蜀, 巴, 宋, 越, 中山, and 义渠 independent'
-  );
+  for (const title of ['蜀', '巴', '宋', '越', '中山', '义渠']) {
+    assert(
+      !snapshots.s_zhanguo_a.polities.some((p) => p.title === title) &&
+        !snapshots.s_zhanguo_a2.polities.some((p) => p.title === title),
+      `s_zhanguo_a and s_zhanguo_a2 do not republish ${title}`
+    );
+  }
   assert.strictEqual(ctrl._resolveSnapKey(zgDynRef, -316), 's_zhanguo_b0', 'zhanguo at -316 BCE must resolve to s_zhanguo_b0');
-  assert(
-    !snapshots.s_zhanguo_b0.polities.some((p) => p.title === '蜀') &&
-      !snapshots.s_zhanguo_b0.polities.some((p) => p.title === '巴') &&
-      snapshots.s_zhanguo_b0.polities.some((p) => p.title === '宋') &&
-      snapshots.s_zhanguo_b0.polities.some((p) => p.title === '越') &&
-      snapshots.s_zhanguo_b0.polities.some((p) => p.title === '中山'),
-    's_zhanguo_b0 (-316..-307 BCE) must annex 巴 & 蜀 into 秦 while keeping 宋, 越, and 中山 independent'
-  );
+  for (const title of ['蜀', '巴', '宋', '越', '中山']) {
+    assert(
+      !snapshots.s_zhanguo_b0.polities.some((p) => p.title === title),
+      `s_zhanguo_b0 does not republish ${title}`
+    );
+  }
   assert.strictEqual(ctrl._resolveSnapKey(zgDynRef, -306), 's_zhanguo_b1', 'zhanguo at -306 BCE must resolve to s_zhanguo_b1');
-  assert(
-    !snapshots.s_zhanguo_b1.polities.some((p) => p.title === '越') &&
-      snapshots.s_zhanguo_b1.polities.some((p) => p.title === '宋') &&
-      snapshots.s_zhanguo_b1.polities.some((p) => p.title === '中山'),
-    's_zhanguo_b1 (-306..-301 BCE) must annex 越 into 楚 while keeping 宋 and 中山 independent'
-  );
+  for (const title of ['越', '宋', '中山']) {
+    assert(
+      !snapshots.s_zhanguo_b1.polities.some((p) => p.title === title),
+      `s_zhanguo_b1 does not republish ${title}`
+    );
+  }
   assert.strictEqual(ctrl._resolveSnapKey(zgDynRef, -296), 's_zhanguo_b2', 'zhanguo at -296 BCE must resolve to s_zhanguo_b2');
   assert(
     !snapshots.s_zhanguo_b2.polities.some((p) => p.title === '中山') &&
       !snapshots.s_zhanguo_b2.polities.some((p) => p.title === '宋') &&
-      pointInShape(112.201, 30.351, snapshots.s_zhanguo_b2.polities.find((p) => p.title === '楚').shape),
-    's_zhanguo_b2 (-296..-279 BCE) must annex 中山 into 赵 and partition 宋 while keeping Yingdu ([112.201, 30.351]) inside 楚 prior to -278 BCE'
+      !snapshots.s_zhanguo_b2.polities.some((p) => p.title === '楚'),
+    's_zhanguo_b2 does not republish 中山, 宋, or 楚'
   );
   }
 
@@ -1030,7 +1014,7 @@ async function runTraceGenealogySuite(ctx) {
   }
 
   // 23l. Verify Sui & Tang frontier borders (Anxi/Beiting Tianshan, Anxi/Tubo Kunlun-Altun, Tang/Tubo Qilian-Hengduan, Tang/Nanzhao) are naturally curved & vertex-locked
-  if (!FAST_MODE) {
+  if (editionPublishesPolygons && !FAST_MODE) {
     for (const sk of ['s_tang_a5', 's_tang_b0a', 's_tang_b0']) {
       const pols = snapshots[sk].polities;
       const findPol = (t) => pols.find((p) => p.title === t);
@@ -1067,19 +1051,22 @@ async function runTraceGenealogySuite(ctx) {
         countShared(anxiKeys, tuboKeys) >= 50,
         `${sk}: 安西都护府 and 吐蕃 must share >= 50 curved Kunlun-Altun frontier vertices`
       );
-      assert(
-        countShared(tangKeys, tuboKeys) >= 50,
-        `${sk}: 唐 and 吐蕃 must share >= 50 curved Qilian-Minshan-Hengduan frontier vertices`
+      assert.strictEqual(
+        countShared(tangKeys, tuboKeys),
+        0,
+        `${sk}: the published Tang ring does not share the omitted Qilian frontier with 吐蕃`
       );
-      assert(
-        countShared(tangKeys, nanzhaoKeys) >= 40,
-        `${sk}: 唐 and 南诏 must share >= 40 curved Yunnan-Guangxi-Annan frontier vertices`
+      assert.strictEqual(
+        countShared(tangKeys, nanzhaoKeys),
+        0,
+        `${sk}: the published Tang ring does not share the omitted Yunnan frontier with 南诏`
       );
       for (const p of [anxi, beiting, tubo, nanzhao, tang]) {
         const r = ringOf(p);
+        const min = p.title === '唐' ? 1 : 120;
         assert(
-          r.length >= 120,
-          `${sk}: ${p.title} ring must have >= 120 curved vertices (got ${r.length})`
+          r.length >= min,
+          `${sk}: ${p.title} ring must have >= ${min} vertices (got ${r.length})`
         );
       }
     }
@@ -1149,7 +1136,7 @@ async function runTraceGenealogySuite(ctx) {
   }
 
   // 23o. Verify Ming Dynasty (s_ming*) natural curved polity borders & bilingual README preview asset parity
-  if (!FAST_MODE) {
+  if (editionPublishesPolygons && !FAST_MODE) {
     for (const mingKey of ['s_ming_a0', 's_ming_a', 's_ming_a2', 's_ming_b', 's_ming_c']) {
       const mingSnap = snapshots[mingKey];
       assert(mingSnap, `Missing Ming snapshot ${mingKey}`);
@@ -1188,9 +1175,9 @@ async function runTraceGenealogySuite(ctx) {
   // 23p. Verify Republic of China Warlord Era (1916–1928) multi-faction snapshots (s_roc_a0, s_roc_w1..w4, s_roc_a)
   for (const [rk, expectedTitles] of [
     ['s_roc_a0', ['中华民国', '外蒙古（自治/苏控）']],
-    ['s_roc_w1', ['北洋政府 · 皖系（段祺瑞）', '直系（冯国璋 · 曹锟）', '奉系（张作霖）', '护法军政府 · 西南各系', '晋系（阎锡山）', '西北诸马（甘宁青）', '新疆（杨增新）']],
-    ['s_roc_w2', ['北洋政府 · 直系（曹锟 · 吴佩孚）', '奉系（张作霖）', '皖系（卢永祥 · 浙江）', '广州政府（孙中山）', '西南川滇黔桂各系', '晋系（阎锡山）', '西北诸马（甘宁青）', '新疆（杨增新）']],
-    ['s_roc_w3', ['北洋政府 · 奉系（张作霖）', '五省联军（孙传芳）', '直系（吴佩孚）', '西北国民军（冯玉祥）', '广州国民政府（两广统一）', '川滇黔军阀（刘湘 · 唐继尧）', '晋系（阎锡山）', '新疆（杨增新）']],
+    ['s_roc_w1', ['北洋政府 · 皖系（段祺瑞）', '直系（冯国璋 · 曹锟）', '奉系（张作霖）', '护法军政府 · 西南各系', '西北诸马（甘宁青）', '新疆（杨增新）']],
+    ['s_roc_w2', ['北洋政府 · 直系（曹锟 · 吴佩孚）', '奉系（张作霖）', '皖系（卢永祥 · 浙江）', '广州政府（孙中山）', '西南川滇黔桂各系', '西北诸马（甘宁青）', '新疆（杨增新）']],
+    ['s_roc_w3', ['北洋政府 · 奉系（张作霖）', '五省联军（孙传芳）', '直系（吴佩孚）', '西北国民军（冯玉祥）', '广州国民政府（两广统一）', '川滇黔军阀（刘湘 · 唐继尧）', '新疆（杨增新）']],
     ['s_roc_w4', ['国民政府（北伐军与冯阎集团）', '安国军政府 · 奉系（张作霖）', '新疆（杨增新）']],
   ]) {
     const rs = snapshots[rk];
@@ -1198,6 +1185,9 @@ async function runTraceGenealogySuite(ctx) {
     const titles = new Set((rs.polities || []).map((p) => p.title));
     for (const et of expectedTitles) {
       assert(titles.has(et), `${rk} must include warlord polity "${et}"`);
+    }
+    if (rk === 's_roc_w1' || rk === 's_roc_w2' || rk === 's_roc_w3') {
+      assert(!titles.has('晋系（阎锡山）'), `${rk} does not republish 晋系（阎锡山）`);
     }
   }
 
@@ -1455,21 +1445,17 @@ async function runTraceGenealogySuite(ctx) {
   // CUJ 24: Eastern Jin & Southern-Northern Dynasties Phased Zhou / Qiaozhou & Commandery Evolution
   {
     assert(
-      snapshots.s_dongjin_c.regions.length >= 30 &&
-        snapshots.s_dongjin_c.regions.length < snapshots.s_nanbei_b.regions.length &&
-        snapshots.s_nanbei_b.regions.length >= 55 &&
-        snapshots.s_nanbei_b.regions.length < snapshots.s_nanbei_c.regions.length &&
-        snapshots.s_nanbei_c.regions.length < snapshots.s_nanbei_d.regions.length &&
-        snapshots.s_nanbei_d.regions.length < snapshots.s_nanbei_e.regions.length,
-      `Expected strictly increasing 5-stage Zhou subdivision across Eastern Jin -> Nanbeichao`
+      snapshots.s_dongjin_c.regions.length === 3 &&
+        snapshots.s_nanbei_b.regions.length === 10 &&
+        snapshots.s_nanbei_c.regions.length === 14 &&
+        snapshots.s_nanbei_d.regions.length === 9 &&
+        snapshots.s_nanbei_e.regions.length === 13,
+      'Eastern Jin and Nanbeichao keep only the region rings that were not mostly the omitted mesh'
     );
     assert(
-      snapshots.s_dongjin_c.prefectures.length >= 100 &&
-        snapshots.s_dongjin_c.prefectures.length <= 115 &&
-        snapshots.s_nanbei_b.prefectures.length >= 130 &&
-        snapshots.s_nanbei_b.prefectures.length <= 150 &&
-        !snapshots.s_dongjin_c.prefectures.some((p) => p.title === '毗陵典农校尉'),
-      'Expected deduplicated North+South commanderies without Three Kingdoms anachronisms'
+      snapshots.s_dongjin_c.prefectures.length === 0 &&
+        snapshots.s_nanbei_b.prefectures.length === 0,
+      'Commandery polygons derived from CHGIS are not published'
     );
 
     const spotCases = [
@@ -1497,16 +1483,27 @@ async function runTraceGenealogySuite(ctx) {
       [{ lng: 109.5, lat: 31.02, year: 520 }, '信州', '巴东郡'],
       [{ lng: 119.3, lat: 26.08, year: 560 }, '闽州', '晋安郡'],
     ];
-    for (const [opts, expReg, expPref] of spotCases) {
+    for (const [opts, expReg] of spotCases) {
       const info = ctrl.inspect(opts);
-      assert(
-        info && info.regions.includes(expReg),
-        `inspect(${JSON.stringify(opts)}) expected region "${expReg}", got ${JSON.stringify(info && info.regions)}`
-      );
-      assert(
-        info && info.prefectures.includes(expPref),
-        `inspect(${JSON.stringify(opts)}) expected commandery "${expPref}", got ${JSON.stringify(info && info.prefectures)}`
-      );
+      const dyn = dynasties.find((d) => opts.year >= d.fromYear && opts.year <= d.toYear);
+      const sk = ctrl._resolveSnapKey(dyn, opts.year);
+      const published = (snapshots[sk].regions || []).some((r) => {
+        const formatted = r.category && !String(r.title).endsWith(r.category) ? `${r.title}(${r.category})` : r.title;
+        const named = formatted === expReg || r.title === expReg;
+        return named && pointInShape(opts.lng, opts.lat, r.shape);
+      });
+      assert(info && info.prefectures.length === 0, `inspect(${JSON.stringify(opts)}) must not return a CHGIS commandery`);
+      if (published) {
+        assert(
+          info.regions.includes(expReg),
+          `inspect(${JSON.stringify(opts)}) expected region "${expReg}", got ${JSON.stringify(info.regions)}`
+        );
+      } else {
+        assert(
+          !info.regions.includes(expReg),
+          `inspect(${JSON.stringify(opts)}) must not report removed CHGIS copy "${expReg}"`
+        );
+      }
     }
 
     const capturedNodes = [];
@@ -1582,15 +1579,16 @@ async function runTraceGenealogySuite(ctx) {
     const zhQiaoCaps = capturedNodes
       .filter((x) => x.attrs && String(x.attrs.class || '').includes('is-qiaozhou'))
       .map((x) => x.n.textContent);
-    assert(
-      zhQiaoCaps.includes('南徐州·侨') && zhQiaoCaps.includes('雍州·侨') && zhQiaoCaps.includes('青冀二州·侨'),
-      `Expected on-map ·侨 badges in ZH at 494 CE, got ${JSON.stringify(zhQiaoCaps)}`
+    assert.deepStrictEqual(
+      zhQiaoCaps,
+      [],
+      `494 CE draws no 侨 badges because region polygons are not published, got ${JSON.stringify(zhQiaoCaps)}`
     );
     ctrl.openGenealogyAt(112.121, 32.011, '襄阳');
     const zhGenHtml = ctrl._id('genealogy-timeline').children.map((c) => c.innerHTML).join('\n');
     assert(
-      zhGenHtml.includes('雍州（侨州）'),
-      `Expected 雍州（侨州） in ZH place genealogy at Xiangyang, got ${zhGenHtml.slice(0, 200)}`
+      !zhGenHtml.includes('雍州（侨州）'),
+      `Xiangyang genealogy must not name the omitted 雍州（侨州）, got ${zhGenHtml.slice(0, 200)}`
     );
 
     ctrl.locale = 'en';
@@ -1600,15 +1598,16 @@ async function runTraceGenealogySuite(ctx) {
     const enQiaoCaps = capturedNodes
       .filter((x) => x.attrs && String(x.attrs.class || '').includes('is-qiaozhou'))
       .map((x) => x.n.textContent);
-    assert(
-      enQiaoCaps.includes('Nanxu Zhou (Emigre)') && enQiaoCaps.includes('Yong Zhou (Emigre)'),
-      `Expected on-map (Emigre) badges in EN at 494 CE, got ${JSON.stringify(enQiaoCaps)}`
+    assert.deepStrictEqual(
+      enQiaoCaps,
+      [],
+      `494 CE draws no Emigre badges because region polygons are not published, got ${JSON.stringify(enQiaoCaps)}`
     );
     ctrl.openGenealogyAt(112.121, 32.011, 'Xiangyang');
     const enGenHtml = ctrl._id('genealogy-timeline').children.map((c) => c.innerHTML).join('\n');
     assert(
-      enGenHtml.includes('Yong Zhou (Emigre)'),
-      `Expected Yong Zhou (Emigre) in EN place genealogy at Xiangyang, got ${enGenHtml.slice(0, 200)}`
+      !enGenHtml.includes('Yong Zhou (Emigre)'),
+      `Xiangyang genealogy must not name the omitted Yong Zhou, got ${enGenHtml.slice(0, 200)}`
     );
     delete ctrl.projector.shapeToSvgPath;
     delete ctrl._buildRegionBoundaryPath;

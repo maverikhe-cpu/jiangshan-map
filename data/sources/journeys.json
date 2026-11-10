@@ -1,4 +1,8 @@
 {
+  "journey:linshi-daxue:1937": [{ "w": "nankai-archives", "loc": "日寇毁校", "note": "7月29日晨至30日下午" }],
+  "journey:linshi-daxue:1937-2": [{ "w": "tsinghua-xsg", "loc": "校舍与开学日", "note": "韭菜园圣经学校；南岳搬入日待核，不单列坐标" }],
+  "journey:linshi-daxue:1938": [{ "w": "tsinghua-xsg", "loc": "迁校布告与步行计划", "note": "1月22日布告，2月4日步行计划，878人与284人；出发日待核" }, { "w": "nankai-archives", "loc": "湘黔滇旅行团", "note": "约300人、11名教师、68天、3000余里，与284人及约3500华里不一致" }],
+  "journey:linshi-daxue:1938-2": [{ "w": "pku-archives", "loc": "1938年4月2日电令", "note": "改称国立西南联合大学" }, { "w": "nankai-archives", "loc": "1938年4月2日更名", "note": "与北大档案馆同日" }, { "w": "tsinghua-alumni", "loc": "4月28日抵昆明", "note": "4月19日平彝、4月27日大板桥只写入文字，不设站点" }, { "w": "nankai-news", "loc": "1938年5月4日开课", "note": "云南师范大学西南联大博物馆同记5月4日上课" }, { "w": "ynnu-bwg", "loc": "三路入滇", "note": "海路与公路无逐站日期，不连线" }],
   "journey:sushi:1085": [{ "w": "songshi", "loc": "卷338 列传第九十七 苏轼传", "note": "元丰七年量移汝州，八年起知登州，到郡五日以礼部郎中召还" }],
   "journey:sushi:1089": [{ "w": "songshi", "loc": "卷338 列传第九十七 苏轼传", "note": "元祐四年以龙图阁学士知杭州，取葑田积湖中为长堤（苏堤）" }]
 }

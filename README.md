@@ -41,14 +41,14 @@ Have you ever wondered while reading Chinese history or classical poetry:
 
 ### Feature 1: Scrub the Timeline to Watch Realms Rise & Fall, Track Monarchs, and Compare Ancient & Modern Borders
 
-- **Multi-Polity Confrontations on a Single Canvas**: From the Seven Warring States (Qin, Chu, Qi, Yan, Zhao, Wei, Han) alongside Zhou, Yue, Ba-Shu, Zhongshan, and Yiqu, to the Three Kingdoms warlords (Yuan Shao, Cao Cao, Liu Bei, Sun Quan, Gongsun's Liaodong), Northern & Southern Dynasties, Five Dynasties & Ten Kingdoms, and Song, Liao, Western Xia, Dali, Jin, and the Mongols—all rendered side-by-side in high-contrast traditional parchment hues. Hover over any polity in the bottom-left legend to highlight its territory, or click to zoom straight to it.
+- **Multi-Polity Confrontations on a Single Canvas**: Polity outlines that remain in this distribution are drawn together in high-contrast parchment hues. Many early rings are not included, among them the Seven Warring States, Zhou, Yue, Ba-Shu, Zhongshan, Yiqu, and several Three Kingdoms warlords such as Gongsun's Liaodong. Hover a name that is still in the bottom-left legend to highlight its published territory, or click to zoom to it.
 - **Multi-Stage Territorial Evolution & Dashed "Ghost Boundary Diffs"**: At every major territorial milestone—such as Qin's conquest of Ba-Shu (316 BCE), Yan General Qin Kai's expansion into Liaodong (300 BCE), Ma Yuan's bronze pillars in Jiaozhi (43 CE), Sima Yi's campaign in Liaodong (238 CE), Li Jing's conquest of Tuyuhun (635 CE), the Four Garrisons of Anxi & Wang Xuance's campaign in Central India (648 CE), Yuan's Xuanzhengyuan rule over Tibet (1288 CE), Ming's Hami & Seven Guards West of Jiayuguan (1404 CE), the 1881 Treaty of Saint Petersburg recovering Ili, the 1898 foreign leased territories, the 1945 retrocession of Taiwan, and the 1946 transition from the **"Begonia Leaf" (秋海棠)** map to the **"Rooster" (雄鸡)** map—click any milestone or phase dot to switch maps and reveal the previous phase's dashed vermilion **Ghost Boundary Diff** so territorial gains and losses are immediately visible.
 - **Inline Reigning Monarch & Imperial Era Display**: The timeline dynamically displays the reigning monarch (temple/posthumous title + personal name + reign span, e.g., `Emperor Wu of Han · Liu Che`, `Emperor Taizong of Tang · Li Shimin`, `Emperor Shengzu of Qing · Xuanye`) alongside the exact imperial era year.
-- **Ancient Prefecture Hover Inspection & Modern X-Ray Lens**: First-level administrative divisions (Commanderies, Circuits, Routes, and Provinces) are rendered with deduplicated **Parchment Casing** borders. Zoom in and hover over any prefecture (e.g., Ming `Yingtian Prefecture` or Three Kingdoms `Jingzhou`) to inspect its jurisdiction and modern provincial equivalents, or toggle the **X-Ray Lens** to project modern provincial boundaries directly over the historical map.
+- **Historical divisions on the map**: First-level divisions that remain in this distribution are drawn with deduplicated **Parchment Casing** borders. Prefecture polygons and the modern-province overlay are not shipped, so this version has no X-Ray Lens and no hover target such as Ming Yingtian Prefecture.
 - **Dynamic River Courses, Ancient Lakes & Grand Engineering Works**: As you scrub through time, historical shifts of the Yellow River, expanding and shrinking ancient lakes (*Yunmeng Marsh*, *Lop Nur / Puchanghai*), Warring States/Qin/Han/Ming Great Walls, Sui-Tang & Grand Canals, the Silk Road, and Zheng He's maritime routes evolve in lockstep with each era; ancient coastlines around the Bohai Gulf, northern Jiangsu, the Yangtze estuary, and the Pearl River Delta also advance and retreat by era.
 - **Zoomable Timeline**: Drag the handles at either end of the timeline inward to zoom into one stretch of history (handy for short eras such as Qin, the Three Kingdoms, or the Five Dynasties); double-click the timeline to return to the full overview.
 
-> [Try It Live: Ming Dynasty Yongle 13 (1415 CE) · Two Capitals, Thirteen Provinces & "Yingtian Prefecture" Inspection →](https://deanchen.me/jiangshan-map/?year=1415&zoom=1.75&center=115.8,33.2&hover=Yingtian%20Prefecture&lang=en)
+> [Try It Live: Ming Yongle 13 (1415 CE), centered on Nanjing →](https://deanchen.me/jiangshan-map/?year=1415&zoom=1.75&center=115.8,33.2&lang=en)
 
 ![Ming Dynasty 1415 CE · Yingtian Prefecture Hover Preview](assets/preview_1415_ming_yingtian_en.webp)
 
@@ -245,14 +245,14 @@ Note: the image is built locally; it is not published to any registry.
 
 ## GeoJSON Export (for Leaflet / MapLibre / QGIS)
 
-The app ships its geometry as compact topology-deduplicated VLQ bundles. To use the vector layers in other projects, generate standard RFC 7946 GeoJSON (EPSG:4326, lon/lat) locally; the output goes to `geojson/` and is not committed. The export covers 403 BCE to 1948; later years and the modern province layer are not included. The prefecture layer (郡 / 州 / 府) is left out by default because it derives from CHGIS, whose terms forbid redistribution; add `--with-prefectures` to include it for local academic, non-commercial use, and do not publish the result.
+The app ships its geometry as compact topology-deduplicated VLQ bundles. To use the vector layers in other projects, generate standard RFC 7946 GeoJSON (EPSG:4326, lon/lat) locally; the output goes to `geojson/` and is not committed. The export covers 403 BCE to 1948; later years and the modern province layer are not included. Prefecture boundaries derived from CHGIS are not in this distribution, and `--with-prefectures` is rejected.
 
 ```bash
 node scripts/export_geojson.js            # or: node scripts/export_geojson.js <outDir>
-node scripts/export_geojson.js --with-prefectures   # adds the CHGIS-derived prefecture layer (local academic use only)
+# --with-prefectures is rejected: CHGIS prefecture boundaries are not in this distribution
 ```
 
-- `snapshots/<id>.geojson` — one file per territorial phase; each feature has a `bbox` and `layer` (`polity` / `region`, plus `prefecture` with `--with-prefectures`), `title`, `title_en`, `category`, `tint`, `anchor`.
+- `snapshots/<id>.geojson` — one file per territorial phase; each feature has a `bbox` and `layer` (`polity` / `region`), `title`, `title_en`, `category`, `tint`, `anchor`. The prefecture layer is not exported.
 - `index.json` — every dynasty's phases with `from` / `to` years (negative = BCE, no year 0) and the matching snapshot file.
 - `corridors.geojson` (walls, canals, roads, sea routes), `settlements.geojson`, `milestones.geojson`, `neighbors.geojson`, and `modern/` (rivers, lakes, hydro labels; `appear` / `vanish` give the years historical river courses and lakes are shown).
 
@@ -263,36 +263,37 @@ const atlas = JiangshanLocate.create(); // or create({ base: '<url of geojson/>'
 const hit = await atlas.locate(118.78, 32.06, 1415); // lon, lat, year
 hit.polity.properties.title;     // 明
 hit.region.properties.title;     // 南直隶
-hit.prefecture;                  // null unless exported with --with-prefectures (then 应天府)
+hit.prefecture;                  // null: this distribution does not include prefecture polygons
 ```
 
-After exporting, serve the repository (`python3 -m http.server 8000`) and open `http://localhost:8000/geojson/demo.html` for a Leaflet example: drag the year slider, click the map, or open `demo.html?year=1415&lon=118.78&lat=32.06` to load, highlight and zoom automatically. Historical borders are schematic approximations, not surveyed boundaries. The data is GPL-3.0 except the prefecture-level boundaries; see [Data Sources & License](#data-sources--license).
+After exporting, serve the repository (`python3 -m http.server 8000`) and open `http://localhost:8000/geojson/demo.html` for a Leaflet example: drag the year slider, click the map, or open `demo.html?year=1415&lon=118.78&lat=32.06` to load, highlight and zoom automatically. Historical borders are schematic approximations, not surveyed boundaries. The exported data is GPL-3.0. Prefecture-level boundaries are not included; see [Data Sources & License](#data-sources--license).
 
 ---
 
 ## Data Sources & License
 
-Code and the data created by this project are released under **GPL-3.0**. One layer is not: the prefecture-level boundaries derived from CHGIS, which stay under CHGIS's own terms.
+Code and the data created by this project are released under **GPL-3.0**. The table records the evidence in this repository. It is not a legal opinion that every remaining ring is cleared.
 
 | Layer | Source | License |
 | :-- | :-- | :-- |
 | Code (app, scripts, CLI, MCP server) | This project | GPL-3.0 |
-| Polity outlines (`polity`) | Started from [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps) (GPL-3.0), then redrawn by hand against historical texts | GPL-3.0 |
-| First-level divisions (`region`: 刺史部 / 道 / 路 / 省 …) | Drawn by hand from historical texts; the source of early versions was not recorded | GPL-3.0 |
-| **Prefecture-level boundaries** (`prefecture`: 郡 / 州 / 府, incl. Warring States and Qin commanderies) | Derived from **CHGIS V6** and the **Robert M. Hartwell China Historical GIS**, simplified to 0.01° and edited by hand | **Not GPL-3.0.** Academic, non-commercial use only; do not redistribute. See below |
+| Edited polity outlines in `data/atlas` | Started from [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps), then edited in this repository. Per-feature provenance is not recorded. Some rings matched CHGIS. A similarity ratio is not a license finding | **These edited coordinates stay out of the public bundles.** Not described as hand-drawn |
+| Upstream historical-basemaps slices | André Ourednik, commit `4b5039e50d8d2464b065bd76ad6086cd4597108d`, GPL-3.0. The maintainer added LICENSE when asked about the data in [issue #3](https://github.com/aourednik/historical-basemaps/issues/3). [Issue #74](https://github.com/aourednik/historical-basemaps/issues/74) has no maintainer reply and does not revoke that license. See `docs/historical-basemaps-license.md` | **Published as `js/historical_basemap.js`.** A slice is drawn only in its own year. No cross-year interval is recorded. Prefectures stay unpublished |
+| First-level divisions (`region`: 刺史部 / 道 / 路 / 省 …) | No per-feature source is recorded | **Coordinates are not in the public bundles.** Not described as hand-drawn |
+| **Prefecture-level boundaries** (`prefecture`: 郡 / 州 / 府) | Formerly derived from **CHGIS V6** and the **Hartwell China Historical GIS**. **Removed**, including exact ring copies (such as 鲁 = 薛郡) and majority-edge copies (such as 九原郡) | **Not shipped.** Not GPL-3.0. Academic, non-commercial, do not redistribute. Obtain CHGIS from [Harvard Dataverse](https://dataverse.harvard.edu/dataverse/chgis_v6) |
 | Settlements, milestones, journeys, person chronicles, place lore | Compiled by this project from historical texts | GPL-3.0 |
-| Modern provinces | DataV GeoAtlas (Alibaba Cloud) | Subject to DataV GeoAtlas terms |
-| Rivers, lakes, neighbouring countries | Public-domain data | Public domain |
-| Terrain hillshade | Rendered by `scripts/build_terrain_tiles.py` from [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (public-domain **SRTM**, **GMTED2010**, **ETOPO1**); only shaded images at no finer than about 1 km per pixel are published | GPL-3.0 (images) |
+| Modern provinces | [DataV GeoAtlas](https://help.aliyun.com/zh/datav/datav-7-0/user-guide/datav-geoatlas-widgets/) says the data comes from Amap and is for learning and exchange only | **Not shipped.** Those terms do not clearly allow public hosting or redistribution |
+| Rivers, lakes, neighbouring countries previously packed in this repo | No upstream license URL was recorded for the old `js/china_geo_data.js` payload or for `neighbors.geojson`. A self-description of public domain is not treated as verification | **Not in this edition.** The public basemap is Natural Earth 1:50m land, rivers, and lakes, version 5.1.2, physical layers only. Terms: https://www.naturalearthdata.com/about/terms-of-use/ |
+| Terrain hillshade | `scripts/build_terrain_tiles.py` names SRTM, Copernicus GLO-90, or AWS Terrain Tiles as possible inputs. The rendered files do not record which source each tile used | **Not in this edition.** The page does not request `assets/terrain/` |
 | Guqin audio | Wikimedia Commons (*Liu Shui*, *Pingsha Luoyan*, *Yangguan Sandie*, *Zuiyu Changwan*, *Jiu Kuang*) | Public domain |
 
 **Scholarly references (not data sources).** Boundaries are checked against historical texts and Tan Qixiang's *The Historical Atlas of China* (谭其骧主编《中国历史地图集》). No map images or data from that atlas are included in this repository.
 
-**Prefecture-level boundaries (CHGIS).** This layer is not covered by GPL-3.0 and is shown here for non-commercial, educational use. Do not republish it from this repository; if you need prefecture boundaries, download CHGIS from its official distribution (Harvard Dataverse) under its terms. `scripts/export_geojson.js` leaves this layer out unless run with `--with-prefectures`. Cite it as: *CHGIS, Version: 6. © Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.* Provenance details: [data/atlas/README.md](data/atlas/README.md).
+**Prefecture-level boundaries (CHGIS).** This layer is not in the published files, the GeoJSON export, or the atlas bundles. It is not covered by GPL-3.0. Do not add it back. If you need prefecture boundaries, download CHGIS from its official distribution (Harvard Dataverse) under its terms. `scripts/export_geojson.js` rejects `--with-prefectures`. Cite an official copy as: *CHGIS, Version: 6. © Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.* Provenance details: [data/atlas/README.md](data/atlas/README.md).
 
 **Approximate boundaries.** Historical territories and administrative boundaries are schematic approximations of broad jurisdictions, not surveyed borders. Do not cite them as precise or authoritative.
 
-**Reusing this project.** For the GPL-3.0 layers, credit **江山时序 Jiangshan Atlas** with a link to https://github.com/DeanChensj/jiangshan-map and cite the upstream sources above. Screenshots that show the prefecture layer carry the CHGIS terms as well.
+**Reusing this project.** For the GPL-3.0 layers, credit **江山时序 Jiangshan Atlas** with a link to https://github.com/DeanChensj/jiangshan-map and cite the upstream sources above.
 
 **Rights holders.** If you hold rights in any material here and believe it is used improperly, please [open an issue](https://github.com/DeanChensj/jiangshan-map/issues); we will respond and remove it if needed.
 

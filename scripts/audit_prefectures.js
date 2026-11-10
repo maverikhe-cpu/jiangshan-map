@@ -10,9 +10,8 @@
  *            of the snapshot, e.g. a prefecture drawn on a different coastline or reused after
  *            the territory was lost
  *
- * The counts are a ratchet, like scripts/audit_topology.js:
- * data/atlas/prefecture_baseline.json records the accepted count for every snapshot, and --check
- * fails when any snapshot gets worse or the baseline is stale.
+ * This distribution does not publish that layer. --check fails when any snapshot still
+ * has prefecture geometry. data/atlas/prefecture_baseline.json stays empty.
  *
  * Usage:
  *   node scripts/audit_prefectures.js                    # Print the worst snapshots
@@ -197,30 +196,24 @@ function main(argv) {
   }
 
   if (args.includes('--check') || args.includes('--update')) {
+    if (report.length) {
+      console.error(
+        `✗ ${report.length} snapshots still carry prefecture geometry. This distribution must not publish the CHGIS layer.`
+      );
+      for (const e of report.slice(0, 12)) console.error(`  ${e.key}`);
+      return 1;
+    }
     const baseline = readBaseline();
-    const { worse, better } = compareWithBaseline(report, baseline);
+    if (Object.keys(baseline).length) {
+      console.error(`✗ ${BASELINE_PATH} still records a prefecture layer. It must stay empty.`);
+      return 1;
+    }
     if (args.includes('--update')) {
-      const firstRun = !fs.existsSync(path.join(ROOT, BASELINE_PATH));
-      if (worse.length && !firstRun && !args.includes('--allow-increase')) {
-        for (const w of worse) console.error(`✗ ${w}`);
-        console.error('Refusing to raise the baseline; fix the prefectures or pass --allow-increase.');
-        return 1;
-      }
-      fs.writeFileSync(path.join(ROOT, BASELINE_PATH), formatBaseline(toBaseline(report)));
-      console.log(`✓ Wrote ${BASELINE_PATH} (${summary})`);
+      fs.writeFileSync(path.join(ROOT, BASELINE_PATH), '{\n}\n');
+      console.log(`✓ Wrote empty ${BASELINE_PATH}`);
       return 0;
     }
-    for (const w of worse) console.error(`✗ worse: ${w}`);
-    for (const b of better) console.error(`✗ better (baseline is stale): ${b}`);
-    if (worse.length) {
-      console.error('Prefecture layer regressed; see `node scripts/audit_prefectures.js --details <key>`.');
-      return 1;
-    }
-    if (better.length) {
-      console.error('Run `node scripts/audit_prefectures.js --update` and commit the baseline.');
-      return 1;
-    }
-    console.log(`✓ Prefecture layer matches ${BASELINE_PATH} (${summary})`);
+    console.log('✓ No prefecture layer is published');
     return 0;
   }
 
