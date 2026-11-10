@@ -41,14 +41,14 @@ Have you ever wondered while reading Chinese history or classical poetry:
 
 ### Feature 1: Scrub the Timeline to Watch Realms Rise & Fall, Track Monarchs, and Compare Ancient & Modern Borders
 
-- **Multi-Polity Confrontations on a Single Canvas**: From the Seven Warring States (Qin, Chu, Qi, Yan, Zhao, Wei, Han) alongside Zhou, Yue, Ba-Shu, Zhongshan, and Yiqu, to the Three Kingdoms warlords (Yuan Shao, Cao Cao, Liu Bei, Sun Quan, Gongsun's Liaodong), Northern & Southern Dynasties, Five Dynasties & Ten Kingdoms, and Song, Liao, Western Xia, Dali, Jin, and the Mongols—all rendered side-by-side in high-contrast traditional parchment hues. Hover over any polity in the bottom-left legend to highlight its territory, or click to zoom straight to it.
+- **Multi-Polity Confrontations on a Single Canvas**: Polity outlines that remain in this distribution are drawn together in high-contrast parchment hues. Many early rings are not included, among them the Seven Warring States, Zhou, Yue, Ba-Shu, Zhongshan, Yiqu, and several Three Kingdoms warlords such as Gongsun's Liaodong. Hover a name that is still in the bottom-left legend to highlight its published territory, or click to zoom to it.
 - **Multi-Stage Territorial Evolution & Dashed "Ghost Boundary Diffs"**: At every major territorial milestone—such as Qin's conquest of Ba-Shu (316 BCE), Yan General Qin Kai's expansion into Liaodong (300 BCE), Ma Yuan's bronze pillars in Jiaozhi (43 CE), Sima Yi's campaign in Liaodong (238 CE), Li Jing's conquest of Tuyuhun (635 CE), the Four Garrisons of Anxi & Wang Xuance's campaign in Central India (648 CE), Yuan's Xuanzhengyuan rule over Tibet (1288 CE), Ming's Hami & Seven Guards West of Jiayuguan (1404 CE), the 1881 Treaty of Saint Petersburg recovering Ili, the 1898 foreign leased territories, the 1945 retrocession of Taiwan, and the 1946 transition from the **"Begonia Leaf" (秋海棠)** map to the **"Rooster" (雄鸡)** map—click any milestone or phase dot to switch maps and reveal the previous phase's dashed vermilion **Ghost Boundary Diff** so territorial gains and losses are immediately visible.
 - **Inline Reigning Monarch & Imperial Era Display**: The timeline dynamically displays the reigning monarch (temple/posthumous title + personal name + reign span, e.g., `Emperor Wu of Han · Liu Che`, `Emperor Taizong of Tang · Li Shimin`, `Emperor Shengzu of Qing · Xuanye`) alongside the exact imperial era year.
-- **Ancient Prefecture Hover Inspection & Modern X-Ray Lens**: First-level administrative divisions (Commanderies, Circuits, Routes, and Provinces) are rendered with deduplicated **Parchment Casing** borders. Zoom in and hover over any prefecture (e.g., Ming `Yingtian Prefecture` or Three Kingdoms `Jingzhou`) to inspect its jurisdiction and modern provincial equivalents, or toggle the **X-Ray Lens** to project modern provincial boundaries directly over the historical map.
+- **Historical divisions on the map**: First-level divisions that remain in this distribution are drawn with deduplicated **Parchment Casing** borders. Prefecture polygons and the modern-province overlay are not shipped, so this version has no X-Ray Lens and no hover target such as Ming Yingtian Prefecture.
 - **Dynamic River Courses, Ancient Lakes & Grand Engineering Works**: As you scrub through time, historical shifts of the Yellow River, expanding and shrinking ancient lakes (*Yunmeng Marsh*, *Lop Nur / Puchanghai*), Warring States/Qin/Han/Ming Great Walls, Sui-Tang & Grand Canals, the Silk Road, and Zheng He's maritime routes evolve in lockstep with each era; ancient coastlines around the Bohai Gulf, northern Jiangsu, the Yangtze estuary, and the Pearl River Delta also advance and retreat by era.
 - **Zoomable Timeline**: Drag the handles at either end of the timeline inward to zoom into one stretch of history (handy for short eras such as Qin, the Three Kingdoms, or the Five Dynasties); double-click the timeline to return to the full overview.
 
-> [Try It Live: Ming Dynasty Yongle 13 (1415 CE) · Two Capitals, Thirteen Provinces & "Yingtian Prefecture" Inspection →](https://deanchen.me/jiangshan-map/?year=1415&zoom=1.75&center=115.8,33.2&hover=Yingtian%20Prefecture&lang=en)
+> [Try It Live: Ming Yongle 13 (1415 CE), centered on Nanjing →](https://deanchen.me/jiangshan-map/?year=1415&zoom=1.75&center=115.8,33.2&lang=en)
 
 ![Ming Dynasty 1415 CE · Yingtian Prefecture Hover Preview](assets/preview_1415_ming_yingtian_en.webp)
 
@@ -272,17 +272,17 @@ After exporting, serve the repository (`python3 -m http.server 8000`) and open `
 
 ## Data Sources & License
 
-Code and the data created by this project are released under **GPL-3.0**. Prefecture-level boundaries derived from CHGIS are omitted from this distribution and stay under CHGIS's own terms.
+Code and the data created by this project are released under **GPL-3.0**. The table records the evidence in this repository. It is not a legal opinion that every remaining ring is cleared.
 
 | Layer | Source | License |
 | :-- | :-- | :-- |
 | Code (app, scripts, CLI, MCP server) | This project | GPL-3.0 |
-| Polity outlines (`polity`) | Started from [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps) (GPL-3.0), then redrawn by hand against historical texts | GPL-3.0 |
-| First-level divisions (`region`: 刺史部 / 道 / 路 / 省 …) | Drawn by hand from historical texts; the source of early versions was not recorded | GPL-3.0 |
-| **Prefecture-level boundaries** (`prefecture`: 郡 / 州 / 府) | Formerly derived from **CHGIS V6** and the **Hartwell China Historical GIS**. **Removed from this distribution**, including region copies whose whole ring matched those boundaries | **Not shipped.** Not GPL-3.0. Academic, non-commercial, do not redistribute. Obtain CHGIS from Harvard Dataverse |
+| Polity outlines (`polity`) | Started from [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps) (GPL-3.0), then redrawn by hand. Rings identical to a CHGIS prefecture ring, or with at least half their edges in that mesh, are omitted. [Issue #74](https://github.com/aourednik/historical-basemaps/issues/74) still asks whether GPL-3.0 was meant for the GeoJSON | Project drawings. Not a clearance of every ring |
+| First-level divisions (`region`: 刺史部 / 道 / 路 / 省 …) | Drawn by hand; the source of early versions was not recorded. Copies that were mostly the CHGIS prefecture mesh are omitted | Project drawings where that is not the case. Not a clearance |
+| **Prefecture-level boundaries** (`prefecture`: 郡 / 州 / 府) | Formerly derived from **CHGIS V6** and the **Hartwell China Historical GIS**. **Removed**, including exact ring copies (such as 鲁 = 薛郡) and majority-edge copies (such as 九原郡) | **Not shipped.** Not GPL-3.0. Academic, non-commercial, do not redistribute. Obtain CHGIS from [Harvard Dataverse](https://dataverse.harvard.edu/dataverse/chgis_v6) |
 | Settlements, milestones, journeys, person chronicles, place lore | Compiled by this project from historical texts | GPL-3.0 |
-| Modern provinces | DataV GeoAtlas (Alibaba Cloud) | Subject to DataV GeoAtlas terms |
-| Rivers, lakes, neighbouring countries | Public-domain data | Public domain |
+| Modern provinces | [DataV GeoAtlas](https://help.aliyun.com/zh/datav/datav-7-0/user-guide/datav-geoatlas-widgets/) says the data comes from Amap and is for learning and exchange only | **Not shipped.** Those terms do not clearly allow public hosting or redistribution |
+| Rivers, lakes, neighbouring countries | This project describes them as public domain. No separate upstream license URL is recorded here. Neighbour rings that copied a CHGIS prefecture ring were removed. They are not the DataV province payload | Kept on that project statement. Not a new legal opinion |
 | Terrain hillshade | Rendered by `scripts/build_terrain_tiles.py` from [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (public-domain **SRTM**, **GMTED2010**, **ETOPO1**); only shaded images at no finer than about 1 km per pixel are published | GPL-3.0 (images) |
 | Guqin audio | Wikimedia Commons (*Liu Shui*, *Pingsha Luoyan*, *Yangguan Sandie*, *Zuiyu Changwan*, *Jiu Kuang*) | Public domain |
 

@@ -1,15 +1,8 @@
 name: Deploy GitHub Pages
 
+# Manual only. A push or merge to main does not publish this site.
+# Run this workflow from the Actions tab when a human has decided the tree is fit to publish.
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'scripts/**'
-      - 'skills/**'
-      - 'data/**'
-      - '.github/ISSUE_TEMPLATE/**'
   workflow_dispatch:
 
 permissions:

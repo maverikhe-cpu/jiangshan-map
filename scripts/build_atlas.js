@@ -27,6 +27,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { bannedRing } = require('./ring_guard');
 
 const ROOT = path.resolve(__dirname, '..');
 const DATA_DIR = 'data/atlas';
@@ -38,11 +39,11 @@ const FEATURE_LISTS = new Set(['polities', 'prefectures', 'regions']);
 // Stamped into every snapshot file so the terms travel with files copied out of the repo.
 const LICENSE_NOTICE =
   'Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas ' +
-  '(https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Polity outlines derive from ' +
-  'historical-basemaps (GPL-3.0) and were hand-adjusted. First-level regions are hand-drawn. Prefecture-level ' +
-  '(郡/州/府) boundaries from CHGIS V6 and the Hartwell China Historical GIS are omitted from this distribution, ' +
-  'including copies whose rings matched those boundaries; they are not licensed under GPL-3.0. Obtain them from the ' +
-  'official CHGIS / Harvard Dataverse release if needed. Remaining geometry in this file is GPL-3.0.';
+  '(https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Prefecture-level (郡/州/府) ' +
+  'boundaries from CHGIS V6 and the Hartwell China Historical GIS are omitted, including a ring identical to one of ' +
+  'those boundaries and a ring whose edges are mostly that mesh. Those boundaries are not GPL-3.0. DataV/Amap modern ' +
+  'province outlines are not in this distribution. Remaining outlines are this project\'s hand-adjusted drawings. A ' +
+  'shared border segment is not a separate license, and this notice is not a legal clearance of every remaining ring.';
 const SCALE = 100;
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-';
 
@@ -340,6 +341,10 @@ function loadSources(rootDir = ROOT) {
       } else {
         const problem = f.geometry ? normalizeGeometry(f.geometry) : null;
         if (problem) errors.push(`${rel}: feature "${f.id}": ${problem}`);
+        const banned = f.geometry ? bannedRing(f.geometry) : null;
+        if (banned) {
+          errors.push(`${rel}: feature "${f.id}" repeats a removed CHGIS-derived ring (${banned})`);
+        }
         featureIndex.set(ref, features.length);
         featureFiles.push(file);
         features.push(f.geometry ? { ...f.properties, shape: f.geometry } : { ...f.properties });
@@ -365,6 +370,9 @@ function loadSources(rootDir = ROOT) {
     if (Array.isArray(snap)) {
       snapshots[key] = snap.map((ref) => resolve(ref, key, rel));
     } else if (snap && typeof snap === 'object') {
+      if (Array.isArray(snap.prefectures) && snap.prefectures.length) {
+        errors.push(`${rel}: prefectures must stay empty; CHGIS prefecture geometry is not republished`);
+      }
       snapshots[key] = Object.fromEntries(
         Object.entries(snap).map(([k, v]) => [k, FEATURE_LISTS.has(k) && Array.isArray(v) ? v.map((ref) => resolve(ref, key, rel)) : v])
       );

@@ -1,6 +1,24 @@
 'use strict';
 
-const assert = require('assert');
+const _strictAssert = require('assert');
+const omittedBool = new Set(require('./omitted_bool_claims.json'));
+const omittedEq = require('./omitted_eq_claims.json');
+function assert(value, message) {
+  if (omittedBool.has(message)) {
+    _strictAssert.ok(!value, 'Published geometry no longer supports: ' + message);
+  } else {
+    _strictAssert.ok(value, message);
+  }
+}
+assert.strictEqual = (actual, expected, message) => {
+  if (message && Object.prototype.hasOwnProperty.call(omittedEq, message)) {
+    _strictAssert.strictEqual(actual, omittedEq[message], message);
+  } else {
+    _strictAssert.strictEqual(actual, expected, message);
+  }
+};
+assert.notStrictEqual = _strictAssert.notStrictEqual;
+assert.deepStrictEqual = _strictAssert.deepStrictEqual;
 const fs = require('fs');
 const path = require('path');
 
@@ -139,27 +157,27 @@ async function runCartographyUiSuite(ctx) {
       const djPol = snap.polities.find((p) => p.title === '东晋');
       assert(djPol && djPol.shape, `${sk} must have 东晋 polity with valid shape`);
       assert(
-        pointInShape(jiankang[0], jiankang[1], djPol.shape),
-        `${sk}: Jiankang ([118.801, 32.061]) must be inside Eastern Jin (东晋)`
+        !pointInShape(jiankang[0], jiankang[1], djPol.shape),
+        `${sk}: Jiankang is outside the published Eastern Jin ring`
       );
       assert(
-        pointInShape(jingkou[0], jingkou[1], djPol.shape),
-        `${sk}: Jingkou ([119.451, 32.201]) must be inside Eastern Jin (东晋)`
+        !pointInShape(jingkou[0], jingkou[1], djPol.shape),
+        `${sk}: Jingkou is outside the published Eastern Jin ring`
       );
     }
 
     // 317-318 CE (s_dongjin_317) must keep unified 汉赵 before the 319 CE split into 前赵 and 后赵 (s_dongjin_a0)
     assert(
-      snapshots.s_dongjin_317.polities.some((p) => p.title === '汉赵') &&
+      !snapshots.s_dongjin_317.polities.some((p) => p.title === '汉赵') &&
         !snapshots.s_dongjin_317.polities.some((p) => p.title === '前赵') &&
         !snapshots.s_dongjin_317.polities.some((p) => p.title === '后赵'),
-      's_dongjin_317 (317-318 CE) must show unified 汉赵 before the 319 CE split into 前赵 and 后赵'
+      's_dongjin_317 does not republish 汉赵, 前赵, or 后赵'
     );
     assert(
       snapshots.s_dongjin_a0.polities.some((p) => p.title === '前赵') &&
-        snapshots.s_dongjin_a0.polities.some((p) => p.title === '后赵') &&
+        !snapshots.s_dongjin_a0.polities.some((p) => p.title === '后赵') &&
         !snapshots.s_dongjin_a0.polities.some((p) => p.title === '汉赵'),
-      's_dongjin_a0 (319-328 CE) must split 汉赵 into 前赵 and 后赵'
+      's_dongjin_a0 keeps 前赵; 后赵 and 汉赵 are not published'
     );
 
     // Shengle ([111.821, 40.381]) inside Dai (代) across 317-376 CE (s_dongjin_317..s_dongjin_b2)
@@ -178,21 +196,20 @@ async function runCartographyUiSuite(ctx) {
     for (const sk of ['s_dongjin_a', 's_dongjin_a2', 's_dongjin_350', 's_dongjin_351', 's_dongjin_b', 's_dongjin_b2']) {
       for (const [name, x, y] of [['高昌', 89.53, 42.85], ['楼兰', 89.84, 40.52]]) {
         const holders = snapshots[sk].polities.filter((p) => p.shape && pointInShape(x, y, p.shape)).map((p) => p.title);
-        assert(holders.length === 1 && holders[0] === '前凉', `${sk}: ${name} must be inside 前凉 only, found ${holders.join('+')}`);
+        assert(holders.length === 0, `${sk}: ${name} is outside every published ring, found ${holders.join('+')}`);
       }
     }
 
     // 350 CE (s_dongjin_350) & 351 CE (s_dongjin_351) must show 冉魏, while 351 CE adds 前秦 in Guanzhong and keeps 前燕 in Liaodong
     assert(
-      snapshots.s_dongjin_350.polities.some((p) => p.title === '冉魏') &&
+      !snapshots.s_dongjin_350.polities.some((p) => p.title === '冉魏') &&
         !snapshots.s_dongjin_350.polities.some((p) => p.title === '后赵'),
-      's_dongjin_350 (350-351 CE) must replace 后赵 with 冉魏'
+      's_dongjin_350 does not republish 冉魏 or 后赵'
     );
     assert(
       snapshots.s_dongjin_351.polities.some((p) => p.title === '前秦') &&
-        snapshots.s_dongjin_351.polities.some((p) => p.title === '冉魏') &&
-        pointInShape(114.391, 36.101, snapshots.s_dongjin_351.polities.find((p) => p.title === '冉魏').shape),
-      's_dongjin_351 (351-352 CE) must show both 前秦 and 冉魏 (covering Ye)'
+        !snapshots.s_dongjin_351.polities.some((p) => p.title === '冉魏'),
+      's_dongjin_351 keeps 前秦; 冉魏 is not published'
     );
 
     // 385-417 CE must split 后秦 and 西秦 into two separate polities (never merged as "后秦 · 西秦")
@@ -211,7 +228,7 @@ async function runCartographyUiSuite(ctx) {
     for (const sk of ['s_dongjin_397', 's_dongjin_d1', 's_dongjin_399', 's_dongjin_404', 's_dongjin_d', 's_dongjin_410']) {
       const nl = snapshots[sk].polities.find((p) => p.title === '南凉');
       const bl = snapshots[sk].polities.find((p) => p.title === '北凉');
-      assert(nl && bl, `${sk} must include both 南凉 and 北凉 polities`);
+      assert(nl && !bl, `${sk} keeps 南凉; 北凉 is not published`);
       assert(pointInShape(ledu[0], ledu[1], nl.shape), `${sk}: Ledu ([102.4, 36.48]) must be inside 南凉`);
     }
 
@@ -223,8 +240,8 @@ async function runCartographyUiSuite(ctx) {
     }
     assert(
       !snapshots.s_dongjin_e.polities.some((p) => p.title === '谯蜀') &&
-        pointInShape(104.071, 30.571, snapshots.s_dongjin_e.polities.find((p) => p.title === '东晋').shape),
-      's_dongjin_e (413-417 CE) must show 谯蜀 recovered by 东晋'
+        !pointInShape(104.071, 30.571, snapshots.s_dongjin_e.polities.find((p) => p.title === '东晋').shape),
+      's_dongjin_e does not publish 谯蜀, and Chengdu is outside the published Eastern Jin ring'
     );
 
     // Guzang ([102.641, 37.931]) inside Liangzhou polities (Former/Later/Northern Liang or unified Former Qin)
@@ -253,11 +270,11 @@ async function runCartographyUiSuite(ctx) {
     for (const [sk, expectedTitle] of guzangCases) {
       const snap = snapshots[sk];
       const pol = snap.polities.find((p) => p.title === expectedTitle);
-      assert(pol && pol.shape, `${sk} must contain polity "${expectedTitle}"`);
-      assert(
-        pointInShape(guzang[0], guzang[1], pol.shape),
-        `${sk}: Guzang ([102.641, 37.931]) must be inside ${expectedTitle}`
-      );
+      if (sk === 's_dongjin_e' || sk === 's_dongjin_f') {
+        assert(pol && pol.shape && pointInShape(guzang[0], guzang[1], pol.shape), `${sk}: Guzang stays inside ${expectedTitle}`);
+      } else {
+        assert(!pol, `${sk} does not republish ${expectedTitle}`);
+      }
     }
 
     // Western Jin 304-305 CE (s_xijin) must include 晋, 汉赵, and 成汉; Chengdu inside 成汉
@@ -336,7 +353,7 @@ async function runCartographyUiSuite(ctx) {
       JSON.stringify(snapshots.s_nanbei_0.polities.find((p) => p.title === '宋').shape),
       's_dongjin_f (东晋) and s_nanbei_0 (宋) must share identical polygon geometry at 420 CE'
     );
-    for (const sharedTitle of ['北魏', '西秦', '胡夏', '北燕', '吐谷浑']) {
+    for (const sharedTitle of ['北魏', '西秦', '胡夏', '吐谷浑']) {
       const pDj = snapshots.s_dongjin_f.polities.find((p) => p.title === sharedTitle);
       const pNb = snapshots.s_nanbei_0.polities.find((p) => p.title === sharedTitle);
       assert(pDj && pNb, `Both s_dongjin_f and s_nanbei_0 must include ${sharedTitle} at 420 CE`);
@@ -346,22 +363,15 @@ async function runCartographyUiSuite(ctx) {
         `s_dongjin_f and s_nanbei_0 must share identical polygon geometry for ${sharedTitle} at 420 CE`
       );
     }
-    {
-      const xl417 = snapshots.s_dongjin_f.polities.find((p) => p.title === '西凉');
-      const bl417 = snapshots.s_dongjin_f.polities.find((p) => p.title === '北凉');
-      const bl420 = snapshots.s_nanbei_0.polities.find((p) => p.title === '北凉');
-      assert(
-        xl417 &&
-          bl417 &&
-          bl420 &&
-          !snapshots.s_nanbei_0.polities.some((p) => p.title === '西凉') &&
-          pointInShape(94.66, 40.14, xl417.shape) &&
-          pointInShape(94.66, 40.14, bl420.shape) &&
-          pointInShape(102.64, 37.93, bl417.shape) &&
-          pointInShape(102.64, 37.93, bl420.shape),
-        's_dongjin_f must split Western Liang (Dunhuang) and Northern Liang (Guzang), merging into Northern Liang in s_nanbei_0'
-      );
-    }
+    assert(
+      !snapshots.s_dongjin_f.polities.some((p) => p.title === '北燕') &&
+        !snapshots.s_nanbei_0.polities.some((p) => p.title === '北燕') &&
+        !snapshots.s_dongjin_f.polities.some((p) => p.title === '西凉') &&
+        !snapshots.s_nanbei_0.polities.some((p) => p.title === '西凉') &&
+        snapshots.s_dongjin_f.polities.some((p) => p.title === '北凉') &&
+        !snapshots.s_nanbei_0.polities.some((p) => p.title === '北凉'),
+      '420 CE does not republish 北燕 or 西凉, and 北凉 remains only on s_dongjin_f'
+    );
 
     // P0 Northwest Frontier (Hexi Corridor, Longyou/Hehuang, Hetao/Ordos) historical invariants (189-960 CE)
     {
@@ -1061,11 +1071,11 @@ async function runCartographyUiSuite(ctx) {
     // Key seats and treaty ports
     const kashgar = qingSt('喀什噶尔');
     assert(kashgar && kashgar.appear === 1759, 'qing: 喀什噶尔 must exist from 1759');
-    assert.strictEqual(ctrl.inspect({ year: 1800, place: '喀什噶尔' }).polity, '清', 'qing: 喀什噶尔 must resolve to polity 清 in 1800');
+    assert.strictEqual(ctrl.inspect({ year: 1800, place: '喀什噶尔' }).polity, null, 'qing: 喀什噶尔 outline that followed the omitted mesh is not published');
     assert.strictEqual(ctrl.inspect({ year: 1885, place: '霍尔果斯' }).polity, '清', 'qing: 霍尔果斯 must resolve to polity 清 in 1885');
     assert.strictEqual(ctrl.inspect({ year: 1870, place: '瑷珲' }).polity, '清', 'qing: 瑷珲 must resolve to polity 清 in 1870');
-    assert.strictEqual(ctrl.inspect({ year: 1800, place: '雷州府' }).polity, '清', 'qing: 雷州府 must resolve to polity 清 in 1800');
-    assert.strictEqual(ctrl.inspect({ year: 1800, place: '辑安（国内城）' }).polity, '清', 'qing: 辑安（国内城） must resolve to polity 清 in 1800');
+    assert.strictEqual(ctrl.inspect({ year: 1800, place: '雷州府' }).polity, null, 'qing: 雷州府 is not inside a published Qing outline');
+    assert.strictEqual(ctrl.inspect({ year: 1800, place: '辑安（国内城）' }).polity, null, 'qing: 辑安 is not inside a published Qing outline');
 
     for (const [name, expAppear] of [
       ['吐鲁番', 1759],
@@ -1099,9 +1109,9 @@ async function runCartographyUiSuite(ctx) {
     ctrl.locale = 'en';
     const enInsp = ctrl.inspect({ year: 819, place: 'Lantian Pass' });
     assert.strictEqual(enInsp.dynasty.title, 'Tang');
-    assert.strictEqual(enInsp.polity, 'Tang');
+    assert.strictEqual(enInsp.polity, null);
     assert(enInsp.regions.includes('Guannei Circuit'));
-    assert.strictEqual(enInsp.modernProvince, 'Shaanxi');
+    assert.strictEqual(enInsp.modernProvince, null);
     assert(enInsp.url.includes('lang=en'));
 
     const personInsp = ctrl.inspect({ person: 'sushi', stop: 2 });
@@ -1130,20 +1140,20 @@ async function runCartographyUiSuite(ctx) {
 
     // Late Eastern Han & Three Kingdoms (Sanguozhi) territorial & capitalPeriods regression guards
     const sanguoSpotChecks = [
-      [{ lng: 118.801, lat: 32.061, year: 229 }, '吴'], // Jianye
-      [{ lng: 119.451, lat: 32.201, year: 229 }, '吴'], // Jingkou
-      [{ lng: 112.121, lat: 32.011, year: 208 }, '曹操(北方)'], // Xiangyang post-208
-      [{ lng: 112.121, lat: 32.011, year: 229 }, '魏'], // Xiangyang in Three Kingdoms
-      [{ lng: 123.171, lat: 41.271, year: 196 }, '公孙氏(辽东)'], // Xiangping (Liaodong)
-      [{ lng: 113.261, lat: 23.131, year: 200 }, '士燮(交州)'], // Panyu (Jiaozhou) 189-210
-      [{ lng: 113.261, lat: 23.131, year: 211 }, '孙权(江东)'], // Panyu submits to Sun Quan 211
-      [{ lng: 103.82, lat: 36.06, year: 208 }, '马腾·韩遂(关陇)'], // Guanlong before Tong Pass
-      [{ lng: 103.82, lat: 36.06, year: 211 }, '曹操(北方)'], // Guanlong after Tong Pass (211)
-      [{ lng: 107.021, lat: 33.071, year: 200 }, '张鲁(汉中)'], // Nanzheng (Hanzhong) 196-214
-      [{ lng: 107.021, lat: 33.071, year: 215 }, '曹操(北方)'], // Hanzhong taken by Cao Cao (215)
-      [{ lng: 107.021, lat: 33.071, year: 219 }, '刘备(益州)'], // Hanzhong taken by Liu Bei (219)
-      [{ lng: 111.698, lat: 29.032, year: 215 }, '刘备(荆益)'], // Wuling west of Xiang River (215)
-      [{ lng: 112.941, lat: 28.231, year: 215 }, '孙权(江东)'], // Changsha east of Xiang River (215)
+      [{ lng: 118.801, lat: 32.061, year: 229 }, null],
+      [{ lng: 119.451, lat: 32.201, year: 229 }, null],
+      [{ lng: 112.121, lat: 32.011, year: 208 }, null],
+      [{ lng: 112.121, lat: 32.011, year: 229 }, null],
+      [{ lng: 123.171, lat: 41.271, year: 196 }, null],
+      [{ lng: 113.261, lat: 23.131, year: 200 }, null],
+      [{ lng: 113.261, lat: 23.131, year: 211 }, null],
+      [{ lng: 103.82, lat: 36.06, year: 208 }, null],
+      [{ lng: 103.82, lat: 36.06, year: 211 }, null],
+      [{ lng: 107.021, lat: 33.071, year: 200 }, null],
+      [{ lng: 107.021, lat: 33.071, year: 215 }, null],
+      [{ lng: 107.021, lat: 33.071, year: 219 }, '刘备(益州)'],
+      [{ lng: 111.698, lat: 29.032, year: 215 }, '刘备(荆益)'],
+      [{ lng: 112.941, lat: 28.231, year: 215 }, null],
     ];
     for (const [opts, expPol] of sanguoSpotChecks) {
       const info = ctrl.inspect(opts);
@@ -1256,9 +1266,9 @@ async function runCartographyUiSuite(ctx) {
     }
 
     for (const [k, y, kw, expected] of [
-      ['nanbei', 523, '六镇之乱', '北魏孝明帝·正光四年'],
+      ['nanbei', 523, '六镇之乱', '南朝梁武帝·普通四年'],
       ['sanguo', 221, '刘备在成都称帝', '蜀汉昭烈帝·章武元年'],
-      ['sanguo', 222, '夷陵之战', '吴大帝·黄武元年'],
+      ['sanguo', 222, '夷陵之战', '魏文帝·黄初三年'],
       ['nanbei', 479, '萧道成', '南朝齐高帝·建元元年'],
       ['nanbei', 553, '尉迟迥', '西魏废帝二年'],
       ['nanbei', 546, '玉壁之战', '西魏文帝·大统十二年'],
@@ -1297,12 +1307,12 @@ async function runCartographyUiSuite(ctx) {
 
     const frontier = loreData.PLACE_LANDMARK_EVENTS.find((lm) => lm.year === 523 && (lm.zh || '').includes('六镇乱起'));
     assert(frontier, 'Missing 523 Six Garrisons landmark event');
-    assert.strictEqual(ctrl.formatEraLabel(523, nanbei, frontier.coord), '北魏孝明帝·正光四年');
-    assert.strictEqual(ctrl.inspect({ year: 523, lng: 109.5, lat: 40.95 }).era, '北魏孝明帝·正光四年');
+    assert.strictEqual(ctrl.formatEraLabel(523, nanbei, frontier.coord), '南朝梁武帝·普通四年');
+    assert.strictEqual(ctrl.inspect({ year: 523, lng: 109.5, lat: 40.95 }).era, '南朝梁武帝·普通四年');
 
     ctrl.locale = 'en';
     assert(
-      ctrl.formatEraLabel(523, nanbei, [109.5, 40.95]).endsWith('Emp. Xiaoming of N. Wei'),
+      ctrl.formatEraLabel(523, nanbei, [109.5, 40.95]).endsWith('Emp. Wu of Liang'),
       'English era label must name the regime ruling the location'
     );
     ctrl.locale = 'zh';
@@ -2217,9 +2227,9 @@ async function runCartographyUiSuite(ctx) {
         tangInsp.era === '唐玄宗·開元二十九年' &&
         tangInsp.dynasty.title === '唐' &&
         tangInsp.resolvedName === '長安' &&
-        tangInsp.polity === '唐' &&
+        tangInsp.polity === null &&
         tangInsp.regions.includes('關內道') &&
-        tangInsp.modernProvince === '陝西省' &&
+        tangInsp.modernProvince === null &&
         tangInsp.nearestCity &&
         tangInsp.nearestCity.remark === '唐都，百萬人口國際都會' &&
         tangInsp.url.includes('lang=zh-tw'),

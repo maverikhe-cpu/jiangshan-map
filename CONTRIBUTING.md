@@ -34,7 +34,7 @@ We welcome contributions of all kinds, including:
 │   ├── zh_hant.js           # Lazy-loaded Traditional Chinese (zh-Hant) runtime converter & historical polysemy dictionary
 │   ├── atlas_boot.js        # Generated from data/atlas/: initial snapshots for instant first-paint rendering
 │   ├── atlas_snapshots.js   # Generated from data/atlas/: topology-deduplicated & VLQ delta-encoded polity/prefecture polygons (lazy-loaded on demand)
-│   ├── china_geo_data.js    # VLQ delta-encoded modern provincial boundaries for the X-Ray reference layer
+│   ├── china_geo_data.js    # Rivers, lakes, and coasts. Modern province outlines are not in this file
 │   └── i18n_dict.js         # Chinese-English dictionary for historical polities, prefectures, cities, and milestones
 ├── skills/
 │   └── jiangshan-atlas/     # Agent Skill (SKILL.md) & zero-dependency CLI screenshot/inspection tool (scripts/jiangshan.py)

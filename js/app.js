@@ -1825,10 +1825,12 @@
       }
       const grpMod = this._id('txt-layer-grp-mod');
       if (grpMod) {
-        grpMod.textContent = this.uiStr('layer_grp_mod', '山川与现代参照');
+        grpMod.textContent = this.uiStr('layer_grp_mod', '山川水系');
       }
-      this._id('lbl-provinces').textContent = this.uiStr('toggle_modern', '现代省界');
-      this._id('lbl-prov-names').textContent = this.uiStr('toggle_modern_labels', '现代省名');
+      const lblProvinces = this._id('lbl-provinces');
+      if (lblProvinces) lblProvinces.textContent = this.uiStr('toggle_modern', '现代省界');
+      const lblProvNames = this._id('lbl-prov-names');
+      if (lblProvNames) lblProvNames.textContent = this.uiStr('toggle_modern_labels', '现代省名');
       this._id('lbl-polities').textContent = this.uiStr('toggle_realms', '历史疆域');
       this._id('lbl-prefectures').textContent =
         this.locale === 'en' ? 'Admin Divisions' : '州道政区';
@@ -9353,8 +9355,8 @@
           this.toggleTerrainMode(e.target.checked);
         });
       }
-      bindToggle('chk-provinces', this.grpProvinces);
-      bindToggle('chk-prov-names', this.grpProvNames);
+      if (this._id('chk-provinces')) bindToggle('chk-provinces', this.grpProvinces);
+      if (this._id('chk-prov-names')) bindToggle('chk-prov-names', this.grpProvNames);
       this._id('chk-polities').addEventListener('change', (e) => {
         this.grpPolities.classList.toggle('is-hidden', !e.target.checked);
         if (this.grpGhostDiff) {

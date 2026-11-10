@@ -21,6 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { bannedRing } = require('./ring_guard');
 
 const ROOT = path.resolve(__dirname, '..');
 const ARGS = process.argv.slice(2);
@@ -132,6 +133,12 @@ function collection(name, features, meta = {}) {
   const fs_ = features.filter(Boolean);
   if (fs_.some((f) => f.properties.layer === 'prefecture')) {
     throw new Error('Refusing to export a prefecture feature. CHGIS prefecture boundaries are not in this distribution.');
+  }
+  for (const f of fs_) {
+    const banned = f.geometry && bannedRing(f.geometry);
+    if (banned) {
+      throw new Error(`Refusing to export a removed CHGIS-derived ring (${banned}).`);
+    }
   }
   const license = LICENSE;
   return { type: 'FeatureCollection', name, ...clean(meta), license, bbox: bbox(fs_), features: fs_ };

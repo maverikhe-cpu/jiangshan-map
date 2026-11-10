@@ -33,6 +33,9 @@ jobs:
       - name: Check prefecture layer against baseline
         run: node scripts/audit_prefectures.js --check
 
+      - name: Check public bundles do not carry restricted geometry
+        run: node scripts/audit_redistribution.js --check
+
       - name: Check data references against baseline
         run: node scripts/audit_sources.js --check
 

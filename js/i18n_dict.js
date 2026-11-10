@@ -5,7 +5,7 @@ window.EN_LOCALE = {
     "brand_sub": "Atlas of China · 403 BCE → Present",
     "btn_layers": "Layers",
     "layer_grp_hist": "Historical Atlas Layers",
-    "layer_grp_mod": "Terrain & Modern Reference",
+    "layer_grp_mod": "Terrain & rivers",
     "toggle_terrain": "Terrain & Rivers",
     "toggle_modern": "Provinces",
     "toggle_modern_labels": "Prov. Names",

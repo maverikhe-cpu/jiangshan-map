@@ -34,7 +34,7 @@
 │   ├── zh_hant.js           # 按需懒加载繁体中文（zh-Hant）运行时转换器与历史专名消歧词表
 │   ├── atlas_boot.js        # 由 data/atlas/ 生成：首屏启动快照，保障首屏零等待渲染
 │   ├── atlas_snapshots.js   # 由 data/atlas/ 生成：拓扑去重与 VLQ 无损增量编码的历史疆域/州道多边形数据（按需惰性加载与解码）
-│   ├── china_geo_data.js    # VLQ 增量编码的现代省级行政区划轮廓参照层（古今透视镜）
+│   ├── china_geo_data.js    # 河流、湖泊、海岸线。现代省界不在本文件中
 │   └── i18n_dict.js         # 中英双语词典与历史专有名词对照表
 ├── skills/
 │   └── jiangshan-atlas/     # Agent Skill 技能定义（SKILL.md）与零依赖 CLI 截图/查询脚本（scripts/jiangshan.py）
