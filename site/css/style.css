@@ -638,6 +638,22 @@ h2 {
   pointer-events: none;
 }
 
+.historical-realm {
+  stroke: rgba(70, 48, 28, 0.5);
+  stroke-width: 0.55;
+  pointer-events: none;
+}
+
+.historical-label {
+  font-size: 13px;
+  font-family: var(--serif-stack);
+  fill: #3d2a1c;
+  paint-order: stroke;
+  stroke: rgba(246, 241, 230, 0.88);
+  stroke-width: 3px;
+  pointer-events: none;
+}
+
 #grp-physical.is-hidden {
   opacity: 0;
 }

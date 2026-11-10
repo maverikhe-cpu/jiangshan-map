@@ -13,4 +13,4 @@ Cloudflare 静态托管请把发布目录设为 `site/`，构建命令留空。�
 - 地形晕渲图片没有逐张记录高程来源，本发行版不发布，页面也不请求它们。
 - 自定义域名 `history.maverik.fun` 在 Cloudflare 控制台里把 CNAME 指到静态站点。不要把令牌、账号编号或 DNS 密钥写进仓库。
 
-署名保持仓库的 GPL-3.0，并注明江山时序。historical-basemaps 的仓库许可证是 GPL-3.0，但其数据许可证仍有未关闭的说明请求（https://github.com/aourednik/historical-basemaps/issues/74）。CHGIS 不在本发行版中。本说明不是法律保证。
+署名保持仓库的 GPL-3.0，并注明江山时序。公开的历史着色来自 historical-basemaps 提交 `4b5039e50d8d2464b065bd76ad6086cd4597108d` 的原始 GeoJSON，许可证是 GPL-3.0（https://github.com/aourednik/historical-basemaps/blob/4b5039e50d8d2464b065bd76ad6086cd4597108d/LICENSE）。作者在 issue #3 被问到数据许可后加入了该文件。issue #74 没有维护者答复，不取消该许可证。本仓库改过的政权环和 CHGIS 郡州府不在公开包中。本说明不是法律保证。

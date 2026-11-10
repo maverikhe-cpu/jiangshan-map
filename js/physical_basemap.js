@@ -13,6 +13,7 @@
   window.ATLAS_EDITION = {
     id: 'reduced-physical-2026-11',
     historicalBoundaries: false,
+    upstreamBasemap: true,
     terrainRelief: false,
     modernProvinces: false,
     neighbors: false,

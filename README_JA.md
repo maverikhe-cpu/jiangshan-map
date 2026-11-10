@@ -277,7 +277,8 @@ hit.prefecture;                  // null: this distribution does not include pre
 | レイヤー | 出典 | ライセンス |
 | :-- | :-- | :-- |
 | コード（アプリ、スクリプト、CLI、MCP サーバー） | このプロジェクト | GPL-3.0 |
-| 政権の領域（`polity`） | [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)（GPL-3.0）が出発点。[issue #74](https://github.com/aourednik/historical-basemaps/issues/74) は、GPL-3.0 が GeoJSON を意図したものかを未解決のまま尋ねています。要素ごとの出典はない。類似比率はライセンス判断ではない | **座標は公開バンドルに入れない。** 手描きとは書かない |
+| このリポジトリで編集した政権領域（`data/atlas`） | [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps) を出発点に、その後このリポジトリで編集した。要素ごとの出典はない。CHGIS と一致する環がある。類似比率はライセンス判断ではない | **編集済み座標は公開バンドルに入れない。** 手描きとは書かない |
+| 上流 historical-basemaps の原図 | André Ourednik、コミット `4b5039e50d8d2464b065bd76ad6086cd4597108d`、GPL-3.0。作者はデータのライセンスを問う [issue #3](https://github.com/aourednik/historical-basemaps/issues/3) で LICENSE を追加した。[issue #74](https://github.com/aourednik/historical-basemaps/issues/74) にメンテナの返信はなく、そのライセンスを取り消さない。`docs/historical-basemaps-license.md` を参照 | **`js/historical_basemap.js` として公開。** 表示年には、その年を超えない最新の原図を使う。郡・州・府は引き続き非公開 |
 | 第一級行政区画（`region`） | 要素ごとの出典は未記録 | **座標は公開バンドルに入れない。** 手描きとは書かない |
 | **郡 / 州 / 府レベルの境界**（`prefecture`） | 以前は **CHGIS V6** と **Hartwell** に由来。**削除済み**。環全体の複製（魯 = 薛郡）と辺の過半が一致する複製（九原郡）を含む | **同梱しない**。GPL-3.0 ではない。学術・非商用、再配布禁止。[Harvard Dataverse](https://dataverse.harvard.edu/dataverse/chgis_v6) から入手 |
 | 古地名、主要な出来事、旅程、人物年譜、地名の沿革 | このプロジェクトが史書から整理 | GPL-3.0 |

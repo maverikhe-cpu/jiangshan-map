@@ -15,6 +15,7 @@ function createValidationContext({ fastMode = false } = {}) {
 
   const dataScripts = [
     'physical_basemap.js',
+    'historical_basemap.js',
     'china_geo_data.js',
     'atlas_boot.js',
     'atlas_snapshots.js',

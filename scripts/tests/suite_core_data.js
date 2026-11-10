@@ -78,8 +78,49 @@ async function runCoreDataSuite(ctx) {
   const physical = sandbox.window.PHYSICAL_BASEMAP;
   const edition = sandbox.window.ATLAS_EDITION;
   assert(
-    edition && edition.historicalBoundaries === false && edition.terrainRelief === false && edition.historicalHydro === false,
-    'ATLAS_EDITION must withhold historical boundaries, terrain relief, and the old hydrography'
+    edition &&
+      edition.historicalBoundaries === false &&
+      edition.upstreamBasemap === true &&
+      edition.terrainRelief === false &&
+      edition.historicalHydro === false,
+    'ATLAS_EDITION must keep edited atlas boundaries unpublished and mark the upstream basemap as the published historical layer'
+  );
+  const historical = sandbox.window.HISTORICAL_BASEMAP;
+  const floorSlice = (year) => {
+    let chosen = null;
+    for (const slice of (historical && historical.slices) || []) {
+      if (slice.year <= year && (!chosen || slice.year > chosen.year)) chosen = slice;
+    }
+    return chosen;
+  };
+  const qinSlice = floorSlice(-221);
+  const warlordSlice = floorSlice(1938);
+  const moveSlice = floorSlice(1937);
+  const tangSlice = floorSlice(741);
+  assert(
+    historical &&
+      historical.commit === '4b5039e50d8d2464b065bd76ad6086cd4597108d' &&
+      qinSlice &&
+      qinSlice.year === -300 &&
+      qinSlice.features.some((feature) => feature.name === 'Qin') &&
+      !qinSlice.features.some((feature) => feature.name === 'Han Empire') &&
+      warlordSlice &&
+      warlordSlice.year === 1938 &&
+      warlordSlice.features.some((feature) => feature.name === 'Chinese warlords') &&
+      moveSlice &&
+      moveSlice.year === 1930 &&
+      tangSlice &&
+      tangSlice.year === 700 &&
+      tangSlice.features.some((feature) => feature.name === 'Sui Empire'),
+    'The published historical layer must floor to the upstream slice: Qin at -300, Chinese warlords at 1938, and the 700 file for a Tang year'
+  );
+  const historicalSrc = fs.readFileSync(path.join(__dirname, '../../js/historical_basemap.js'), 'utf8');
+  assert(
+    historicalSrc.includes('GPL-3.0') &&
+      historicalSrc.includes('4b5039e50d8d2464b065bd76ad6086cd4597108d') &&
+      !historicalSrc.includes('九原郡') &&
+      !historicalSrc.includes('"shape"'),
+    'historical_basemap.js must cite GPL-3.0 and the pinned commit, and must not carry edited atlas rings'
   );
   assert(
     physical && Array.isArray(physical.land) && physical.land.length > 0 && Array.isArray(physical.rivers) && Array.isArray(physical.lakes),

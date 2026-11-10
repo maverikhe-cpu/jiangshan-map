@@ -51,6 +51,7 @@ const LAZY_ATTR_ASSETS = [
   { attr: 'data-v-pinyin', datasetKey: 'vPinyin', relPath: 'js/event_pinyin.js' },
   { attr: 'data-v-hant', datasetKey: 'vHant', relPath: 'js/zh_hant.js' },
   { attr: 'data-v-quiz', datasetKey: 'vQuiz', relPath: 'js/atlas_quiz.js' },
+  { attr: 'data-v-historical', datasetKey: 'vHistorical', relPath: 'js/historical_basemap.js' },
 ];
 
 function shortSha256(filePath) {

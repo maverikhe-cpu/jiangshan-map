@@ -36,6 +36,9 @@ jobs:
       - name: Check the Natural Earth physical basemap
         run: node scripts/build_physical_basemap.js --check
 
+      - name: Check the historical-basemaps extract
+        run: node scripts/build_historical_basemap.js --check
+
       - name: Check public bundles do not carry restricted geometry
         run: node scripts/audit_redistribution.js --check
 

@@ -51,6 +51,28 @@ function main(argv) {
     problems.push('data/basemap/SOURCE.json does not record Natural Earth 5.1.2 terms');
   }
 
+  const historical = fs.readFileSync(path.join(ROOT, 'js/historical_basemap.js'), 'utf8');
+  const historicalSource = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'data/basemap/historical-basemaps/SOURCE.json'), 'utf8')
+  );
+  if (
+    !historical.includes('GPL-3.0') ||
+    !historical.includes('4b5039e50d8d2464b065bd76ad6086cd4597108d') ||
+    historical.includes('九原郡') ||
+    historical.includes('"shape"') ||
+    historical.includes('110000')
+  ) {
+    problems.push('js/historical_basemap.js must stay the GPL upstream extract and must not carry edited or DataV geometry');
+  }
+  if (
+    historicalSource.license !== 'GPL-3.0' ||
+    historicalSource.commit !== '4b5039e50d8d2464b065bd76ad6086cd4597108d' ||
+    !Array.isArray(historicalSource.files) ||
+    historicalSource.files.length < 40
+  ) {
+    problems.push('data/basemap/historical-basemaps/SOURCE.json must record the GPL-3.0 commit and file hashes');
+  }
+
   for (const rel of ['js/atlas_boot.js', 'js/atlas_snapshots.js']) {
     const text = fs.readFileSync(path.join(ROOT, rel), 'utf8');
     if (text.includes('"title":"九原郡"') || text.includes('"title":"直隶厅"') || text.includes('直隶厅')) {

@@ -209,6 +209,7 @@ function buildData() {
     '  window.ATLAS_EDITION = {\n' +
     "    id: 'reduced-physical-2026-11',\n" +
     '    historicalBoundaries: false,\n' +
+    '    upstreamBasemap: true,\n' +
     '    terrainRelief: false,\n' +
     '    modernProvinces: false,\n' +
     '    neighbors: false,\n' +

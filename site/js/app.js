@@ -503,6 +503,7 @@
             ? (fn) => window.requestIdleCallback(fn, { timeout: 200 })
             : (fn) => setTimeout(fn, 80);
         scheduleIdle(() => this._ensureLoreDetail());
+        scheduleIdle(() => this._ensureHistoricalBasemap());
       }
     }
 
@@ -988,6 +989,7 @@
       this.grpNeighbors = this._id('grp-neighbors');
       this.grpProvinces = this._id('grp-provinces');
       this.grpProvNames = this._id('grp-prov-names');
+      this.grpHistorical = this._id('grp-historical');
       this.grpPolities = this._id('grp-polities');
       this.grpPrefectures = this._id('grp-prefectures');
       this.prefClipPath = this._id('prefecture-clip-path');
@@ -1844,9 +1846,12 @@
       const lblProvNames = this._id('lbl-prov-names');
       if (lblProvNames) lblProvNames.textContent = this.uiStr('toggle_modern_labels', '现代省名');
       const boundariesWithheld = this._historicalBoundariesWithheld();
-      this._id('lbl-polities').textContent = boundariesWithheld
-        ? this.uiStr('toggle_realms_withheld', '历史疆域（本发行版暂缺）')
-        : this.uiStr('toggle_realms', '历史疆域');
+      const upstreamBasemap = Boolean(window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap);
+      this._id('lbl-polities').textContent = upstreamBasemap
+        ? this.uiStr('toggle_realms_upstream', '历史疆域（上游示意）')
+        : boundariesWithheld
+          ? this.uiStr('toggle_realms_withheld', '历史疆域（本发行版暂缺）')
+          : this.uiStr('toggle_realms', '历史疆域');
       this._id('lbl-prefectures').textContent = boundariesWithheld
         ? this.locale === 'en'
           ? 'Admin divisions (not in this edition)'
@@ -1856,7 +1861,10 @@
           : '州道政区';
       const polChk = this._id('chk-polities');
       const prefChk = this._id('chk-prefectures');
-      if (boundariesWithheld && polChk) {
+      if (upstreamBasemap && polChk) {
+        polChk.disabled = false;
+        if (this.grpHistorical) this.grpHistorical.classList.toggle('is-hidden', !polChk.checked);
+      } else if (boundariesWithheld && polChk) {
         polChk.checked = false;
         polChk.disabled = true;
         if (this.grpPolities) this.grpPolities.classList.add('is-hidden');
@@ -1868,10 +1876,12 @@
       }
       const editionNote = this._id('edition-note');
       if (editionNote) {
-        editionNote.textContent = this.uiStr(
-          'edition_note',
-          '本发行版暂缺历史边界。岸线与主要河流是 Natural Earth 1:50m 现代自然地理，供定位，不是历史边界。'
-        );
+        editionNote.textContent = upstreamBasemap
+          ? this._editionNoteText()
+          : this.uiStr(
+              'edition_note',
+              '本发行版暂缺历史边界。岸线与主要河流是 Natural Earth 1:50m 现代自然地理，供定位，不是历史边界。'
+            );
       }
       this._id('lbl-settlements').textContent = this.uiStr('toggle_cities', '古地名');
       const lblCorridors = this._id('lbl-corridors');
@@ -1971,10 +1981,13 @@
       );
       this._id('txt-seat-label').textContent = this.uiStr('capital_k', '都城');
       this._id('txt-milestones-heading').textContent = this.uiStr('events_h', '重大事件');
-      this._id('txt-disclaimer').textContent = this.uiStr(
-        'caveat',
-        '本发行版暂缺历史边界。岸线与主要河流是 Natural Earth 1:50m 现代自然地理，供定位，不是历史边界。'
-      );
+      this._id('txt-disclaimer').textContent =
+        window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap
+          ? this._editionNoteText()
+          : this.uiStr(
+              'caveat',
+              '本发行版暂缺历史边界。岸线与主要河流是 Natural Earth 1:50m 现代自然地理，供定位，不是历史边界。'
+            );
       this._id('txt-year-suffix').textContent = this.uiStr('year_unit', '年');
       const stepPrevBtn = this._id('act-step-prev');
       if (stepPrevBtn) {
@@ -2272,6 +2285,210 @@
       this.grpPhysical.classList.toggle('is-hidden', !this.physicalMode);
       if (!this.terrainReliefPublished && this.grpTerrain) this.grpTerrain.classList.add('is-hidden');
       if (!this.terrainReliefPublished && this.svg) this.svg.classList.remove('terrain-active');
+    }
+
+    _historicalSlice(year) {
+      const slices = (window.HISTORICAL_BASEMAP && window.HISTORICAL_BASEMAP.slices) || [];
+      let chosen = null;
+      for (const slice of slices) {
+        if (slice.year <= year && (!chosen || slice.year > chosen.year)) chosen = slice;
+      }
+      return chosen;
+    }
+
+    _editionNoteText() {
+      const year = this._historicalSliceYear;
+      const loaded = Boolean(window.HISTORICAL_BASEMAP);
+      if (this.locale === 'en') {
+        const when = !loaded
+          ? 'The upstream slice is still loading.'
+          : year == null
+            ? 'No upstream slice covers this year.'
+            : `The slice on screen is ${year < 0 ? Math.abs(year) + ' BCE' : year + ' CE'}.`;
+        return `Colored realms are historical-basemaps (GPL-3.0, André Ourednik). ${when} They are a continental sketch, not this snapshot's detailed borders. Prefectures are not in this edition. The coast and rivers are Natural Earth 1:50m, not a historical border.`;
+      }
+      const when = !loaded
+        ? '上游图幅仍在载入。'
+        : year == null
+          ? '这一年没有可显示的上游图幅。'
+          : `画面使用的是${year < 0 ? '前' + Math.abs(year) : year}年上游整幅。`;
+      return `着色疆域来自 historical-basemaps（GPL-3.0，André Ourednik）。${when}这是大陆尺度示意，不是本快照的细部疆界。郡州府边界本发行版暂缺。岸线与河流是 Natural Earth 1:50m，不是历史边界。`;
+    }
+
+    _historicalColor(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = (hash * 33 + name.charCodeAt(i)) >>> 0;
+      return `hsla(${hash % 360}, 42%, 42%, 0.4)`;
+    }
+
+    _historicalLabel(name) {
+      if (this.locale === 'en') return name;
+      const zh = {
+        Qin: '秦',
+        'Zhou states': '周诸国',
+        Yue: '越',
+        'Han Empire': '汉',
+        Han: '汉',
+        Xiongnu: '匈奴',
+        'Min-Yue': '闽越',
+        'Nan-Yue': '南越',
+        Yuezhi: '月氏',
+        'Sui Empire': '隋',
+        'Tufan Empire': '吐蕃',
+        'Nan-Zhao': '南诏',
+        'Nan Chao': '南诏',
+        'Song Empire': '宋',
+        Liao: '辽',
+        Xixia: '西夏',
+        'Ming Chinese Empire': '明',
+        'Mongol Empire': '蒙古',
+        'Chinese warlords': '军阀割据',
+        'Chinese Warlords': '军阀割据',
+        Xinjiang: '新疆',
+        Tibet: '西藏',
+        Korea: '朝鲜',
+        Goryeo: '高丽',
+        'Empire of Japan': '日本',
+        'Japan (Warring States)': '日本（战国）',
+        USSR: '苏联',
+        'British Raj': '英属印度',
+        'French Indo-China': '法属印度支那',
+        China: '中国',
+        Mongolia: '蒙古',
+        Manchuria: '满洲',
+      };
+      return zh[name] || name;
+    }
+
+    _historicalArea(feature) {
+      let best = 0;
+      for (const polygon of feature.polygons || []) {
+        const ring = polygon[0] || [];
+        let area = 0;
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          area += ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
+        }
+        best = Math.max(best, Math.abs(area) / 2);
+      }
+      return best;
+    }
+
+    _historicalCentroid(feature) {
+      let best = null;
+      let bestArea = 0;
+      for (const polygon of feature.polygons || []) {
+        const ring = polygon[0] || [];
+        if (ring.length < 4) continue;
+        let area = 0;
+        let x = 0;
+        let y = 0;
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          const cross = ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
+          area += cross;
+          x += (ring[j][0] + ring[i][0]) * cross;
+          y += (ring[j][1] + ring[i][1]) * cross;
+        }
+        const abs = Math.abs(area) / 2;
+        if (abs > bestArea && area !== 0) {
+          bestArea = abs;
+          best = [x / (3 * area), y / (3 * area)];
+        }
+      }
+      return best;
+    }
+
+    _renderHistoricalBasemap() {
+      if (!this.grpHistorical || !this.projector) return;
+      const slice = this._historicalSlice(this.year);
+      this._historicalSliceYear = slice ? slice.year : null;
+      const token = `${slice ? slice.year : 'none'}:${this.locale || 'zh'}`;
+      const checked = this._id('chk-polities');
+      this.grpHistorical.classList.toggle('is-hidden', Boolean(checked && !checked.checked));
+      if (this._historicalDrawnToken === token && this.grpHistorical.childElementCount) return;
+      this._historicalDrawnToken = token;
+      this.grpHistorical.innerHTML = '';
+      if (!slice) return;
+      const labels = [];
+      for (const feature of slice.features) {
+        const d = this.projector.multiRingsToSvgPath(feature.polygons);
+        if (!d) continue;
+        this._svgNode(
+          'path',
+          { d, class: 'historical-realm', fill: this._historicalColor(feature.name), 'fill-rule': 'evenodd' },
+          this.grpHistorical
+        );
+        const centroid = this._historicalCentroid(feature);
+        if (!centroid || this._historicalArea(feature) < 12) continue;
+        if (centroid[0] < 66 || centroid[0] > 142 || centroid[1] < 14 || centroid[1] > 55) continue;
+        labels.push({ name: feature.name, centroid });
+      }
+      const labelLayer = this._svgNode('g', {}, this.grpHistorical);
+      for (const item of labels) {
+        const [x, y] = this.projector.toScreen(item.centroid[0], item.centroid[1]);
+        const text = this._svgNode(
+          'text',
+          { x: x.toFixed(1), y: y.toFixed(1), class: 'historical-label', 'text-anchor': 'middle' },
+          labelLayer
+        );
+        text.textContent = this._historicalLabel(item.name);
+      }
+    }
+
+    _appendUpstreamLegend(grid) {
+      if (!window.HISTORICAL_BASEMAP || !grid) return;
+      const slice = this._historicalSlice(this.year);
+      if (!slice) return;
+      const ranked = slice.features
+        .map((feature) => ({
+          feature,
+          area: this._historicalArea(feature),
+          centroid: this._historicalCentroid(feature),
+        }))
+        .filter(
+          (item) =>
+            item.centroid &&
+            item.centroid[0] >= 73 &&
+            item.centroid[0] <= 135 &&
+            item.centroid[1] >= 18 &&
+            item.centroid[1] <= 54
+        )
+        .sort((a, b) => b.area - a.area)
+        .slice(0, 8);
+      for (const item of ranked) {
+        const entry = document.createElement('span');
+        entry.className = 'key-entry';
+        const swatch = document.createElement('i');
+        swatch.className = 'swatch';
+        swatch.style.background = this._historicalColor(item.feature.name);
+        entry.appendChild(swatch);
+        entry.appendChild(document.createTextNode(' ' + this._historicalLabel(item.feature.name)));
+        grid.appendChild(entry);
+      }
+    }
+
+    _ensureHistoricalBasemap() {
+      if (window.HISTORICAL_BASEMAP) {
+        this._renderHistoricalBasemap();
+        return Promise.resolve();
+      }
+      if (!this._historicalPromise) {
+        this._historicalPromise = this._loadScriptOnce(
+          this._lazyAssetUrl('js/historical_basemap.js', 'vHistorical')
+        ).then(() => {
+          this._historicalDrawnToken = null;
+          this._renderHistoricalBasemap();
+          if (this.lastRenderedSnap) this._renderLegendBox(this.lastRenderedSnap);
+          const editionNote = this._id('edition-note');
+          if (editionNote && window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap) {
+            editionNote.textContent = this._editionNoteText();
+          }
+          const disclaimer = this._id('txt-disclaimer');
+          if (disclaimer && window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap) {
+            disclaimer.textContent = this._editionNoteText();
+          }
+        });
+      }
+      return this._historicalPromise;
     }
 
     _buildTerrainRivers() {
@@ -5681,11 +5898,17 @@
       if (this._historicalBoundariesWithheld()) {
         const withheld = document.createElement('div');
         withheld.className = 'key-note';
-        withheld.textContent = this.uiStr('boundary_withheld', '本发行版暂缺边界');
+        withheld.textContent =
+          window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap
+            ? this.locale === 'en'
+              ? 'Fine atlas borders and prefectures are not in this edition'
+              : '细部疆界与郡州府暂缺'
+            : this.uiStr('boundary_withheld', '本发行版暂缺边界');
         this.mapKey.appendChild(withheld);
       }
       const grid = document.createElement('div');
       grid.className = 'key-grid key-polities-grid';
+      this._appendUpstreamLegend(grid);
       const core = this._historicalBoundariesWithheld()
         ? []
         : (snap.polities || []).filter((p) => p.role !== 'neighbor');
@@ -6778,6 +7001,11 @@
       const nextSnapKey = this._resolveSnapKey(cur, y);
 
       this._runWithDeferredTypography(() => {
+        this._renderHistoricalBasemap();
+        const editionNote = this._id('edition-note');
+        if (editionNote && window.ATLAS_EDITION && window.ATLAS_EDITION.upstreamBasemap) {
+          editionNote.textContent = this._editionNoteText();
+        }
         if (prevIdx !== this.dynastyIdx || !this.grpSettlements.firstChild) {
           if (prevIdx !== this.dynastyIdx) {
             this._clearQuickSearchInput();
@@ -9453,6 +9681,7 @@
       if (this._id('chk-prov-names')) bindToggle('chk-prov-names', this.grpProvNames);
       this._id('chk-polities').addEventListener('change', (e) => {
         this.grpPolities.classList.toggle('is-hidden', !e.target.checked);
+        if (this.grpHistorical) this.grpHistorical.classList.toggle('is-hidden', !e.target.checked);
         if (this.grpGhostDiff) {
           this.grpGhostDiff.classList.toggle('is-hidden', !e.target.checked);
         }
