@@ -28,11 +28,28 @@ function main(argv) {
   }
 
   const china = fs.readFileSync(path.join(ROOT, 'js/china_geo_data.js'), 'utf8');
-  if (!/const P = \[\];/.test(china)) problems.push('js/china_geo_data.js must keep PROVINCE_OUTLINES empty (const P = [])');
+  if (!/window\.PROVINCE_OUTLINES\s*=\s*\[\];/.test(china)) {
+    problems.push('js/china_geo_data.js must keep PROVINCE_OUTLINES empty');
+  }
   if (china.includes('110000') || china.includes('100000_JD')) {
     problems.push('js/china_geo_data.js still contains DataV province adcodes');
   }
-  if (!/window\.HYDRO_DATA\s*=/.test(china)) problems.push('js/china_geo_data.js must still publish HYDRO_DATA');
+  if (!/window\.HYDRO_DATA\s*=/.test(china)) problems.push('js/china_geo_data.js must still publish an empty HYDRO_DATA object');
+  if (/const HR\s*=/.test(china) || /paleoSea:\s*PS/.test(china)) {
+    problems.push('js/china_geo_data.js still publishes the uncited river, lake, or coastline payload');
+  }
+
+  const physical = fs.readFileSync(path.join(ROOT, 'js/physical_basemap.js'), 'utf8');
+  if (!physical.includes('https://www.naturalearthdata.com/about/terms-of-use/')) {
+    problems.push('js/physical_basemap.js must cite the Natural Earth terms');
+  }
+  if (!physical.includes('ne_50m_land') || physical.includes('admin_0_countries') || physical.includes('ne_50m_admin')) {
+    problems.push('js/physical_basemap.js must be the physical land layer and must not carry admin boundaries');
+  }
+  const source = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/basemap/SOURCE.json'), 'utf8'));
+  if (source.version !== '5.1.2' || source.terms !== 'https://www.naturalearthdata.com/about/terms-of-use/') {
+    problems.push('data/basemap/SOURCE.json does not record Natural Earth 5.1.2 terms');
+  }
 
   for (const rel of ['js/atlas_boot.js', 'js/atlas_snapshots.js']) {
     const text = fs.readFileSync(path.join(ROOT, rel), 'utf8');
@@ -40,6 +57,9 @@ function main(argv) {
       problems.push(`${rel} still contains a removed prefecture feature`);
     }
     if (text.includes('110000')) problems.push(`${rel} contains a modern province adcode`);
+    if (!text.includes('"r":[]') || text.includes('"shape"')) {
+      problems.push(`${rel} still publishes polygon coordinates`);
+    }
   }
 
   if (problems.length) {

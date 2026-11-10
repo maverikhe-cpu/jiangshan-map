@@ -275,13 +275,13 @@ hit.prefecture;                  // 恆為 null：本發行版不含郡州府多
 | 圖層 | 來源 | 授權 |
 | :-- | :-- | :-- |
 | 程式碼（頁面、腳本、CLI、MCP 服務） | 本專案 | GPL-3.0 |
-| 政權疆域輪廓（`polity`） | 以 [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)（GPL-3.0）為起點，此後手工調整。與 CHGIS 府界整環相同、或邊數至少一半來自該邊界網的環已移除。[上游 issue #74](https://github.com/aourednik/historical-basemaps/issues/74) 仍在詢問 GPL-3.0 是否適用於 GeoJSON | 專案手繪。不是逐環許可結論 |
-| 一級政區（`region`：刺史部 / 道 / 路 / 省等） | 依據史籍手工繪製；早期版本來源未記錄。邊數過半來自 CHGIS 府界網的副本已隨府界移除 | 其餘為專案手繪。不是逐環許可結論 |
+| 政權疆域輪廓（`polity`） | 以 [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)（GPL-3.0）為起點。[上游 issue #74](https://github.com/aourednik/historical-basemaps/issues/74) 仍在詢問 GPL-3.0 是否適用於 GeoJSON。沒有逐條來源。相似比例不是許可判斷 | **座標不進入公開包。** 不稱為手繪 |
+| 一級政區（`region`：刺史部 / 道 / 路 / 省等） | 沒有逐條來源記錄 | **座標不進入公開包。** 不稱為手繪 |
 | **郡 / 州 / 府級邊界**（`prefecture`） | 曾源自 **CHGIS V6** 與 **Hartwell China Historical GIS**。**本發行版已移除**，含整環副本（如魯 = 薛郡）和邊數過半的副本（如九原郡） | **不隨本倉庫發布**。不適用 GPL-3.0。學術、非商業、不得再分發。請向 [Harvard Dataverse](https://dataverse.harvard.edu/dataverse/chgis_v6) 取得 |
 | 古地名、重大事件、行跡路線、人物年譜、地名沿革 | 本專案依據史籍整理 | GPL-3.0 |
 | 現代省界 | [DataV GeoAtlas](https://help.aliyun.com/zh/datav/datav-7-0/user-guide/datav-geoatlas-widgets/) 寫明資料來自高德，僅供學習和交流 | **不隨本倉庫發布**。該條款不能證明可以公開託管或再分發 |
-| 河流、湖泊、周邊國家 | 專案自述為公有領域，倉庫沒有另附上游許可連結。與 CHGIS 府界整環相同的鄰國環已移除。它們不是 DataV 省界 | 按專案自述保留。不是新的法律意見 |
-| 地形暈渲 | 由 `scripts/build_terrain_tiles.py` 基於 [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/)（公有領域的 **SRTM**、**GMTED2010**、**ETOPO1**）渲染；倉庫只發布最細約 1 km/像素的暈渲圖片 | GPL-3.0（圖片） |
+| 原先打包的河流、湖泊、周邊國家 | `js/china_geo_data.js` 舊座標和 `neighbors.geojson` 沒有上游許可連結。倉庫自述公有領域，不能當成已經核驗 | **本發行版不發布。** 公開底圖是 Natural Earth 1:50m 陸地、河流、湖泊（5.1.2，僅自然地理層）。條款：https://www.naturalearthdata.com/about/terms-of-use/ |
+| 地形暈渲 | `scripts/build_terrain_tiles.py` 把 SRTM、Copernicus GLO-90 或 AWS Terrain Tiles 都寫成可能的輸入。成品沒有逐張記錄用了哪一個 | **本發行版不發布。** 頁面不請求 `assets/terrain/` |
 | 古琴錄音 | Wikimedia Commons（《流水》《平沙落雁》《陽關三疊》《醉漁唱晚》《酒狂》） | 公有領域 |
 
 **參考資料（非資料來源）**：邊界依據史籍並參照譚其驤主編《中國歷史地圖集》核對。本倉庫不包含該圖集的任何圖像或資料。

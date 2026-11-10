@@ -1,6 +1,6 @@
 {
   "type": "FeatureCollection",
-  "license": "Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas (https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Prefecture-level (郡/州/府) boundaries from CHGIS V6 and the Hartwell China Historical GIS are omitted, including a ring identical to one of those boundaries and a ring whose edges are mostly that mesh. Those boundaries are not GPL-3.0. DataV/Amap modern province outlines are not in this distribution. Remaining outlines are this project's hand-adjusted drawings. A shared border segment is not a separate license, and this notice is not a legal clearance of every remaining ring.",
+  "license": "These source files are outside the public site directory (site/). This edition does not copy their polygon coordinates into the published bundles: per-feature redistribution rights are not confirmed. A shared edge or a similarity ratio is not a license determination, and these outlines are not described here as independently hand-drawn. CHGIS V6 / Hartwell prefecture boundaries and DataV/Amap modern province outlines are not included. This notice is not a legal clearance.",
   "snapshot": {
     "caption": "1368—1369 年 · 朱元璋建明与徐达北伐克大都",
     "note": "1368 年正月朱元璋于应天称帝建明，南征闽广、北取山东河南；八月徐达攻克元大都（改北平府），元顺帝北走上都。此时晋陕陇右、辽东、四川明夏与云南梁王尚待平定。",

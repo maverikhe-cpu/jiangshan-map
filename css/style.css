@@ -613,6 +613,46 @@ h2 {
   fill: var(--water-fill);
 }
 
+.edition-note {
+  position: absolute;
+  z-index: 6;
+  top: 52px;
+  left: 16px;
+  max-width: min(360px, calc(100% - 400px));
+  margin: 0;
+  padding: 6px 10px;
+  background: rgba(246, 241, 230, 0.94);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #5c3b2e;
+  text-align: center;
+  pointer-events: none;
+}
+
+.physical-land {
+  fill: #efe6d4;
+  stroke: #c3b59a;
+  stroke-width: 0.7;
+  pointer-events: none;
+}
+
+#grp-physical.is-hidden {
+  opacity: 0;
+}
+
+@media (max-width: 640px) {
+  .edition-note {
+    top: 46px;
+    left: 8px;
+    right: 8px;
+    max-width: none;
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+}
+
 /* Terrain Shaded Relief & Hydrology Layer */
 #grp-terrain {
   pointer-events: none;

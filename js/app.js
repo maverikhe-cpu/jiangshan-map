@@ -424,8 +424,14 @@
       this.musicPlaying = false;
       this.musicTrackIdx = 0;
       this.musicAudio = null;
-      this.terrainMode = true;
-      this.hydroData = window.HYDRO_DATA || { rivers: [], lakes: [] };
+      this.terrainReliefPublished = !(window.ATLAS_EDITION && window.ATLAS_EDITION.terrainRelief === false);
+      this.terrainMode = this.terrainReliefPublished;
+      this.physicalMode = true;
+      const physicalBasemap = window.PHYSICAL_BASEMAP;
+      this.hydroData =
+        physicalBasemap && Array.isArray(physicalBasemap.rivers)
+          ? { rivers: physicalBasemap.rivers, lakes: physicalBasemap.lakes || [], labels: [], paleoSea: [] }
+          : window.HYDRO_DATA || { rivers: [], lakes: [], labels: [], paleoSea: [] };
       this.activeTrace = null;
       this.activePerson = null;
       this.activePersonEventIdx = -1;
@@ -473,6 +479,7 @@
       this._bindDom();
       this._runWithDeferredTypography(() => {
         this._applyCamera(true);
+        this._buildPhysicalLand();
         this._buildTerrainRivers();
         this._buildModernProvinces();
         this._buildNeighborCountries();
@@ -973,6 +980,7 @@
       this.viewportFrame = this._id('viewport-frame');
       this._stageWrap = this._id('svg-stage-wrap');
       this.svg = this._id('atlas-svg');
+      this.grpPhysical = this._id('grp-physical');
       this.grpTerrain = this._id('grp-terrain');
       this.terrainTileLayer = this._id('grp-terrain-tiles');
       this.grpPaleoSea = this._id('grp-paleo-sea');
@@ -1817,7 +1825,9 @@
       }
       const lblTerrainChk = this._id('lbl-terrain-chk');
       if (lblTerrainChk) {
-        lblTerrainChk.textContent = this.uiStr('toggle_terrain', '山川水系');
+        lblTerrainChk.textContent = this.terrainReliefPublished
+          ? this.uiStr('toggle_terrain', '山川水系')
+          : this.uiStr('toggle_physical', '自然岸线');
       }
       const grpHist = this._id('txt-layer-grp-hist');
       if (grpHist) {
@@ -1825,15 +1835,44 @@
       }
       const grpMod = this._id('txt-layer-grp-mod');
       if (grpMod) {
-        grpMod.textContent = this.uiStr('layer_grp_mod', '山川水系');
+        grpMod.textContent = this.terrainReliefPublished
+          ? this.uiStr('layer_grp_mod', '山川水系')
+          : this.uiStr('layer_grp_physical', '自然地理');
       }
       const lblProvinces = this._id('lbl-provinces');
       if (lblProvinces) lblProvinces.textContent = this.uiStr('toggle_modern', '现代省界');
       const lblProvNames = this._id('lbl-prov-names');
       if (lblProvNames) lblProvNames.textContent = this.uiStr('toggle_modern_labels', '现代省名');
-      this._id('lbl-polities').textContent = this.uiStr('toggle_realms', '历史疆域');
-      this._id('lbl-prefectures').textContent =
-        this.locale === 'en' ? 'Admin Divisions' : '州道政区';
+      const boundariesWithheld = this._historicalBoundariesWithheld();
+      this._id('lbl-polities').textContent = boundariesWithheld
+        ? this.uiStr('toggle_realms_withheld', '历史疆域（本发行版暂缺）')
+        : this.uiStr('toggle_realms', '历史疆域');
+      this._id('lbl-prefectures').textContent = boundariesWithheld
+        ? this.locale === 'en'
+          ? 'Admin divisions (not in this edition)'
+          : '州道政区（本发行版暂缺）'
+        : this.locale === 'en'
+          ? 'Admin Divisions'
+          : '州道政区';
+      const polChk = this._id('chk-polities');
+      const prefChk = this._id('chk-prefectures');
+      if (boundariesWithheld && polChk) {
+        polChk.checked = false;
+        polChk.disabled = true;
+        if (this.grpPolities) this.grpPolities.classList.add('is-hidden');
+      }
+      if (boundariesWithheld && prefChk) {
+        prefChk.checked = false;
+        prefChk.disabled = true;
+        if (this.grpPrefectures) this.grpPrefectures.classList.add('is-hidden');
+      }
+      const editionNote = this._id('edition-note');
+      if (editionNote) {
+        editionNote.textContent = this.uiStr(
+          'edition_note',
+          '本发行版暂缺历史边界。岸线与主要河流是 Natural Earth 1:50m 现代自然地理，供定位，不是历史边界。'
+        );
+      }
       this._id('lbl-settlements').textContent = this.uiStr('toggle_cities', '古地名');
       const lblCorridors = this._id('lbl-corridors');
       lblCorridors.textContent = this.uiStr('toggle_routes', '关河丝路');
@@ -1934,7 +1973,7 @@
       this._id('txt-milestones-heading').textContent = this.uiStr('events_h', '重大事件');
       this._id('txt-disclaimer').textContent = this.uiStr(
         'caveat',
-        '历史疆域与政区为示意性近似，非精确测绘边界。地形晕渲据 SRTM、GMTED2010 公开高程数据。'
+        '本发行版暂缺历史边界。岸线与主要河流是 Natural Earth 1:50m 现代自然地理，供定位，不是历史边界。'
       );
       this._id('txt-year-suffix').textContent = this.uiStr('year_unit', '年');
       const stepPrevBtn = this._id('act-step-prev');
@@ -2210,6 +2249,31 @@
       return `${base}:${eMask}`;
     }
 
+    _historicalBoundariesWithheld() {
+      return Boolean(window.ATLAS_EDITION && window.ATLAS_EDITION.historicalBoundaries === false);
+    }
+
+    _modernOutlinesWithheld() {
+      const hasProvince = (this.provinces || []).some((prov) => prov && prov.rings && prov.rings.length);
+      const hasNeighbor = ((this.snapshots && this.snapshots.neighbors) || []).some((item) => item && item.shape);
+      return !hasProvince && !hasNeighbor;
+    }
+
+    _buildPhysicalLand() {
+      if (!this.grpPhysical) return;
+      this.grpPhysical.innerHTML = '';
+      const land = (window.PHYSICAL_BASEMAP && window.PHYSICAL_BASEMAP.land) || [];
+      for (const polygon of land) {
+        if (!Array.isArray(polygon) || !polygon.length) continue;
+        const d = this.projector.multiRingsToSvgPath([polygon]);
+        if (!d) continue;
+        this._svgNode('path', { d, class: 'physical-land' }, this.grpPhysical);
+      }
+      this.grpPhysical.classList.toggle('is-hidden', !this.physicalMode);
+      if (!this.terrainReliefPublished && this.grpTerrain) this.grpTerrain.classList.add('is-hidden');
+      if (!this.terrainReliefPublished && this.svg) this.svg.classList.remove('terrain-active');
+    }
+
     _buildTerrainRivers() {
       if (!this.hydroData) return;
       this.activeHydroMask = this._hydroMask(this.year);
@@ -2320,6 +2384,22 @@
     }
 
     toggleTerrainMode(forceState) {
+      if (!this.terrainReliefPublished) {
+        this.physicalMode = forceState !== undefined ? Boolean(forceState) : !this.physicalMode;
+        this.terrainMode = false;
+        if (this.svg) this.svg.classList.remove('terrain-active');
+        if (this.grpTerrain) this.grpTerrain.classList.add('is-hidden');
+        if (this.grpPhysical && this.grpPhysical.classList) {
+          this.grpPhysical.classList.toggle('is-hidden', !this.physicalMode);
+        }
+        if (this.grpRivers && this.grpRivers.classList) {
+          this.grpRivers.classList.toggle('is-hidden', !this.physicalMode);
+        }
+        const physicalChk = this._id('chk-terrain');
+        if (physicalChk) physicalChk.checked = this.physicalMode;
+        this._invalidateTypographyLayout();
+        return;
+      }
       this.terrainMode =
         forceState !== undefined ? Boolean(forceState) : !this.terrainMode;
       if (this.svg) {
@@ -2761,6 +2841,7 @@
     _buildNeighborCountries() {
       const list = Array.isArray(this.snapshots.neighbors) ? this.snapshots.neighbors : [];
       for (const item of list) {
+        if (!item || !item.shape) continue;
         const path = this._svgNode(
           'path',
           { d: this.projector.shapeToSvgPath(item.shape, false), class: 'neighbor-shape' },
@@ -3034,6 +3115,7 @@
           this._svgNode('path', { d: meshD, class: 'prefecture-boundary-mesh' }, prefGroup);
         }
         for (const pref of prefs || []) {
+          if (!pref || !pref.shape) continue;
           const path = this._svgNode(
             'path',
             { d: this.projector.shapeToSvgPath(pref.shape), class: 'prefecture-shape' },
@@ -3074,6 +3156,7 @@
       }
 
       for (const reg of snap.regions || []) {
+        if (!reg || !reg.shape) continue;
         if (reg.anchor && reg.title) {
           const isQiao = reg.category === '侨州';
           if (
@@ -3128,6 +3211,7 @@
       const ownPaths = [];
 
       for (const pol of sorted) {
+        if (!pol || !pol.shape) continue;
         const isN = pol.role === 'neighbor';
         const attrs = {
           d: this.projector.shapeToSvgPath(pol.shape),
@@ -5594,10 +5678,20 @@
         h.textContent = this.trTerm(snap.caption);
         this.mapKey.appendChild(h);
       }
+      if (this._historicalBoundariesWithheld()) {
+        const withheld = document.createElement('div');
+        withheld.className = 'key-note';
+        withheld.textContent = this.uiStr('boundary_withheld', '本发行版暂缺边界');
+        this.mapKey.appendChild(withheld);
+      }
       const grid = document.createElement('div');
       grid.className = 'key-grid key-polities-grid';
-      const core = (snap.polities || []).filter((p) => p.role !== 'neighbor');
-      const hasNeighbors = (snap.polities || []).some((p) => p.role === 'neighbor');
+      const core = this._historicalBoundariesWithheld()
+        ? []
+        : (snap.polities || []).filter((p) => p.role !== 'neighbor');
+      const hasNeighbors =
+        !this._historicalBoundariesWithheld() &&
+        (snap.polities || []).some((p) => p.role === 'neighbor');
       const eraFocusTitle = this.activePolity ? null : this._eraFocusTitle();
       const curDynForKey = this.dynasties[this.dynastyIdx];
       for (const p of core) {
@@ -7251,7 +7345,7 @@
     // Web Mercator hillshade tiles from assets/terrain/ fade in on top; the
     // base stays underneath so a slow tile never leaves a hole.
     _scheduleTerrainTiles() {
-      if (!this.terrainTileLayer) return;
+      if (!this.terrainReliefPublished || !this.terrainMode || !this.terrainTileLayer) return;
       clearTimeout(this._terrainTileTimer);
       this._terrainTileTimer = setTimeout(() => this._updateTerrainTiles(), 40);
     }

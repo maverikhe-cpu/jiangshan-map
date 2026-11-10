@@ -115,26 +115,18 @@ async function runTraceGenealogySuite(ctx) {
   for (const sk of ['s_ming_b']) {
     const mingPol = snapshots[sk].polities.find((p) => p.title === '明');
     assert(
-      mingPol &&
-        mingPol.shape.type === 'MultiPolygon' &&
-        mingPol.shape.coordinates.length === 2 &&
-        mingPol.shape.coordinates.filter((p) => p[0].length > 200).length === 0,
-      `${sk} Ming polity keeps two rings after the mainland mesh was omitted`
+      mingPol && !mingPol.shape,
+      `${sk} does not publish a Ming boundary fragment`
     );
     const jurchenPol = snapshots[sk].polities.find((p) => p.title === '女真诸部');
     assert(jurchenPol && jurchenPol.role === 'neighbor', `${sk} must include 女真诸部 neighbor polity in the Northeast`);
   }
 
   // Verify Western Regions Great Lakes (Lop Nur vanish 1972, labels, and gazetteer resolution)
-  const lopNurLake = (sandbox.window.HYDRO_DATA.lakes || []).find((l) => l.name === 'Lop Nur');
   assert(
-    lopNurLake && lopNurLake.rank === 2 && lopNurLake.vanish === 1972,
-    `Lop Nur lake must have rank 2 and vanish 1972, got ${JSON.stringify(lopNurLake)}`
-  );
-  const lopNurLabel = (sandbox.window.HYDRO_DATA.labels || []).find((lb) => lb.zh === '蒲昌海·罗布泊');
-  assert(
-    lopNurLabel && lopNurLabel.vanish === 1972,
-    `蒲昌海·罗布泊 hydro label must have vanish 1972, got ${JSON.stringify(lopNurLabel)}`
+    !(sandbox.window.HYDRO_DATA.lakes || []).some((l) => l.name === 'Lop Nur') &&
+      !(sandbox.window.HYDRO_DATA.labels || []).some((lb) => lb.zh === '蒲昌海·罗布泊'),
+    'The old Lop Nur reconstruction is not published; it had no upstream license URL'
   );
   for (const westernLake of ['蒲昌海', '博斯腾湖', '热海', '夷播海', '居延海']) {
     const hit = ctrl.resolvePlace(westernLake, 741);
@@ -296,7 +288,7 @@ async function runTraceGenealogySuite(ctx) {
   );
   assert(
     prcRowHtml.includes('中华人民共和国') &&
-      prcRowHtml.includes('域外 / 未设郡县') &&
+      prcRowHtml.includes('本发行版暂缺边界') &&
       prcRowHtml.includes('现代城市：岳阳（即此地）'),
     `Expected PRC row at Yueyang to name the city without a modern province polygon, got ${prcRowHtml}`
   );
@@ -317,7 +309,7 @@ async function runTraceGenealogySuite(ctx) {
   );
   assert(
     jzRocHtml.includes('邻近古城：荆州（即此地）') &&
-      jzPrcHtml.includes('域外 / 未设郡县') &&
+      jzPrcHtml.includes('本发行版暂缺边界') &&
       jzPrcHtml.includes('现代城市：荆州（即此地）'),
     `Expected ROC and PRC rows at Jingzhou to resolve 荆州（即此地）, got ROC=${jzRocHtml} PRC=${jzPrcHtml}`
   );
@@ -504,6 +496,18 @@ async function runTraceGenealogySuite(ctx) {
   assert.strictEqual(mockSearchInp.value, '', '_clearQuickSearchInput() must clear #inp-map-search value');
   ctrl._id = origId23e;
 
+  const editionPublishesPolygons = Object.values(snapshots).some(
+    (s) =>
+      s &&
+      !Array.isArray(s) &&
+      ((s.polities || []).some((p) => p && p.shape) || (s.regions || []).some((r) => r && r.shape))
+  );
+  assert.strictEqual(
+    editionPublishesPolygons,
+    false,
+    'This edition publishes no polity or region polygons'
+  );
+  if (editionPublishesPolygons) {
   // 23f. Verify Dali (大理, 937–1253 CE), Nanzhao (南诏, 649–936 CE), and unified Tubo (吐蕃, 618–877 CE) vs fragmented Tibetan polities (吐蕃诸部, 880–1246 CE)
   if (!FAST_MODE) {
   const daliSnapKeys = [
@@ -827,6 +831,7 @@ async function runTraceGenealogySuite(ctx) {
       `${sk}: ${swPol.title} must share contiguous boundary vertices with adjacent polities (found ${sharedCount})`
     );
   }
+  }
 
   // 23g. National Map Compliance Guard (Zangnan, Aksai Chin, Taiwan, Ten-Dash Line & ROC Tibet Unification)
   assert(
@@ -886,6 +891,7 @@ async function runTraceGenealogySuite(ctx) {
     }
   }
 
+  if (editionPublishesPolygons) {
   // 23h. Verify Western Liang (西梁, 554–587 CE) at Jiangling ([112.241, 30.331])
   const xiliangSnapKeys = ['s_nanbei_d3', 's_nanbei_e', 's_nanbei_e2', 's_nanbei_f', 's_sui_a'];
   for (const sk of xiliangSnapKeys) {
@@ -932,6 +938,7 @@ async function runTraceGenealogySuite(ctx) {
       mongolPol && !pointInShape(93.511, 42.821, mongolPol.shape),
       `${sk}: 蒙古诸部 · 东察合台 must not overlap Hami ([93.511, 42.821])`
     );
+  }
   }
 
   // 23j. Verify Warring States (zhanguo) phase transitions align with -323, -316, -306, -300, -296, -286, -278 milestones
@@ -1007,7 +1014,7 @@ async function runTraceGenealogySuite(ctx) {
   }
 
   // 23l. Verify Sui & Tang frontier borders (Anxi/Beiting Tianshan, Anxi/Tubo Kunlun-Altun, Tang/Tubo Qilian-Hengduan, Tang/Nanzhao) are naturally curved & vertex-locked
-  if (!FAST_MODE) {
+  if (editionPublishesPolygons && !FAST_MODE) {
     for (const sk of ['s_tang_a5', 's_tang_b0a', 's_tang_b0']) {
       const pols = snapshots[sk].polities;
       const findPol = (t) => pols.find((p) => p.title === t);
@@ -1129,7 +1136,7 @@ async function runTraceGenealogySuite(ctx) {
   }
 
   // 23o. Verify Ming Dynasty (s_ming*) natural curved polity borders & bilingual README preview asset parity
-  if (!FAST_MODE) {
+  if (editionPublishesPolygons && !FAST_MODE) {
     for (const mingKey of ['s_ming_a0', 's_ming_a', 's_ming_a2', 's_ming_b', 's_ming_c']) {
       const mingSnap = snapshots[mingKey];
       assert(mingSnap, `Missing Ming snapshot ${mingKey}`);
@@ -1572,9 +1579,10 @@ async function runTraceGenealogySuite(ctx) {
     const zhQiaoCaps = capturedNodes
       .filter((x) => x.attrs && String(x.attrs.class || '').includes('is-qiaozhou'))
       .map((x) => x.n.textContent);
-    assert(
-      zhQiaoCaps.includes('南徐州·侨') && !zhQiaoCaps.includes('雍州·侨') && !zhQiaoCaps.includes('青冀二州·侨'),
-      `Expected only the remaining ·侨 badge in ZH at 494 CE, got ${JSON.stringify(zhQiaoCaps)}`
+    assert.deepStrictEqual(
+      zhQiaoCaps,
+      [],
+      `494 CE draws no 侨 badges because region polygons are not published, got ${JSON.stringify(zhQiaoCaps)}`
     );
     ctrl.openGenealogyAt(112.121, 32.011, '襄阳');
     const zhGenHtml = ctrl._id('genealogy-timeline').children.map((c) => c.innerHTML).join('\n');
@@ -1590,9 +1598,10 @@ async function runTraceGenealogySuite(ctx) {
     const enQiaoCaps = capturedNodes
       .filter((x) => x.attrs && String(x.attrs.class || '').includes('is-qiaozhou'))
       .map((x) => x.n.textContent);
-    assert(
-      enQiaoCaps.includes('Nanxu Zhou (Emigre)') && !enQiaoCaps.includes('Yong Zhou (Emigre)'),
-      `Expected only the remaining (Emigre) badge in EN at 494 CE, got ${JSON.stringify(enQiaoCaps)}`
+    assert.deepStrictEqual(
+      enQiaoCaps,
+      [],
+      `494 CE draws no Emigre badges because region polygons are not published, got ${JSON.stringify(enQiaoCaps)}`
     );
     ctrl.openGenealogyAt(112.121, 32.011, 'Xiangyang');
     const enGenHtml = ctrl._id('genealogy-timeline').children.map((c) => c.innerHTML).join('\n');

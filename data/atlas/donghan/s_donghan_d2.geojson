@@ -1,6 +1,6 @@
 {
   "type": "FeatureCollection",
-  "license": "Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas (https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Prefecture-level (郡/州/府) boundaries from CHGIS V6 and the Hartwell China Historical GIS are omitted, including a ring identical to one of those boundaries and a ring whose edges are mostly that mesh. Those boundaries are not GPL-3.0. DataV/Amap modern province outlines are not in this distribution. Remaining outlines are this project's hand-adjusted drawings. A shared border segment is not a separate license, and this notice is not a legal clearance of every remaining ring.",
+  "license": "These source files are outside the public site directory (site/). This edition does not copy their polygon coordinates into the published bundles: per-feature redistribution rights are not confirmed. A shared edge or a similarity ratio is not a license determination, and these outlines are not described here as independently hand-drawn. CHGIS V6 / Hartwell prefecture boundaries and DataV/Amap modern province outlines are not included. This notice is not a legal clearance.",
   "snapshot": {
     "caption": "196—199 年 · 曹操迎献帝迁许与袁绍南北争衡",
     "note": "196 年汉献帝东归洛阳，曹操迎天子迁都许昌，“奉天子以令不臣”，据有河南、兖、豫、徐州；北方袁绍灭公孙瓒尽统冀、青、幽、并四州，与曹操隔黄河对峙；凉州及关西由马腾、韩遂等割据，江东孙策渡江平定吴会六郡。",

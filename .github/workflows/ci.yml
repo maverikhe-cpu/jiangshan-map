@@ -33,8 +33,14 @@ jobs:
       - name: Check prefecture layer against baseline
         run: node scripts/audit_prefectures.js --check
 
+      - name: Check the Natural Earth physical basemap
+        run: node scripts/build_physical_basemap.js --check
+
       - name: Check public bundles do not carry restricted geometry
         run: node scripts/audit_redistribution.js --check
+
+      - name: Check the publish directory allowlist
+        run: node scripts/stage_site.js --check
 
       - name: Check data references against baseline
         run: node scripts/audit_sources.js --check

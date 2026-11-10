@@ -277,13 +277,13 @@ hit.prefecture;                  // null: this distribution does not include pre
 | レイヤー | 出典 | ライセンス |
 | :-- | :-- | :-- |
 | コード（アプリ、スクリプト、CLI、MCP サーバー） | このプロジェクト | GPL-3.0 |
-| 政権の領域（`polity`） | [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)（GPL-3.0）が出発点で、その後手作業で調整。CHGIS の府界と環が一致するもの、または辺の半分以上がその網に属するものは除いています。[issue #74](https://github.com/aourednik/historical-basemaps/issues/74) は、GPL-3.0 が GeoJSON を意図したものかを未解決のまま尋ねています | プロジェクトの手描き。各環の法的結論ではない |
-| 第一級行政区画（`region`） | 手作業。初期版の出典は未記録。辺の過半が CHGIS 府界網だった複製は除いています | それ以外はプロジェクトの手描き。各環の法的結論ではない |
+| 政権の領域（`polity`） | [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)（GPL-3.0）が出発点。[issue #74](https://github.com/aourednik/historical-basemaps/issues/74) は、GPL-3.0 が GeoJSON を意図したものかを未解決のまま尋ねています。要素ごとの出典はない。類似比率はライセンス判断ではない | **座標は公開バンドルに入れない。** 手描きとは書かない |
+| 第一級行政区画（`region`） | 要素ごとの出典は未記録 | **座標は公開バンドルに入れない。** 手描きとは書かない |
 | **郡 / 州 / 府レベルの境界**（`prefecture`） | 以前は **CHGIS V6** と **Hartwell** に由来。**削除済み**。環全体の複製（魯 = 薛郡）と辺の過半が一致する複製（九原郡）を含む | **同梱しない**。GPL-3.0 ではない。学術・非商用、再配布禁止。[Harvard Dataverse](https://dataverse.harvard.edu/dataverse/chgis_v6) から入手 |
 | 古地名、主要な出来事、旅程、人物年譜、地名の沿革 | このプロジェクトが史書から整理 | GPL-3.0 |
 | 現代の省界 | [DataV GeoAtlas](https://help.aliyun.com/zh/datav/datav-7-0/user-guide/datav-geoatlas-widgets/) は高徳のデータで、学習と交流のみと記しています | **同梱しない**。公開ホストや再配布を許すとは読めません |
-| 河川、湖、周辺国 | プロジェクトはパブリックドメインと記しています。別の上流ライセンス URL は倉庫にありません。CHGIS 府界と一致した隣国の環は除いています。DataV の省界ではありません | その記述にもとづき残しています。新しい法的意見ではありません |
-| 地形の陰影 | `scripts/build_terrain_tiles.py` が [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/)（パブリックドメインの **SRTM**、**GMTED2010**、**ETOPO1**）から描画。公開しているのは、解像度が 1 ピクセルあたり約 1 km より細かくない陰影画像だけです | GPL-3.0（画像） |
+| 以前同梱していた河川・湖・周辺国 | 旧 `js/china_geo_data.js` と `neighbors.geojson` に上流ライセンス URL がない。リポジトリの公有領域という自己申告は確認済みとは扱わない | **この版には入れない。** 公開する下図は Natural Earth 1:50m の陸地・河川・湖（5.1.2、自然地理レイヤのみ）。条項: https://www.naturalearthdata.com/about/terms-of-use/ |
+| 地形の陰影 | `scripts/build_terrain_tiles.py` は SRTM、Copernicus GLO-90、AWS Terrain Tiles のいずれも入力候補にしている。タイルごとに出典が記録されていない | **この版には入れない。** ページは `assets/terrain/` を要求しない |
 | 古琴の音声 | Wikimedia Commons（*流水*、*平沙落雁*、*陽関三畳*、*酔漁唱晩*、*酒狂*） | パブリックドメイン |
 
 **参考文献（データの出典ではありません）**：境界は、史書と譚其驤の *The Historical Atlas of China*（谭其骧主编《中国历史地图集》）に照らして確認しています。この地図集の画像やデータは、このリポジトリには含まれていません。

@@ -36,14 +36,16 @@ const FULL_PATH = 'js/atlas_snapshots.js';
 const BOOT_PATH = 'js/atlas_boot.js';
 
 const FEATURE_LISTS = new Set(['polities', 'prefectures', 'regions']);
+// Public bundles omit polygon coordinates. A shared edge or a similarity ratio is not a license
+// finding, and this edition does not describe the remaining source rings as independently hand-drawn.
+const PUBLISH_POLYGONS = false;
 // Stamped into every snapshot file so the terms travel with files copied out of the repo.
 const LICENSE_NOTICE =
-  'Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas ' +
-  '(https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Prefecture-level (郡/州/府) ' +
-  'boundaries from CHGIS V6 and the Hartwell China Historical GIS are omitted, including a ring identical to one of ' +
-  'those boundaries and a ring whose edges are mostly that mesh. Those boundaries are not GPL-3.0. DataV/Amap modern ' +
-  'province outlines are not in this distribution. Remaining outlines are this project\'s hand-adjusted drawings. A ' +
-  'shared border segment is not a separate license, and this notice is not a legal clearance of every remaining ring.';
+  'These source files are outside the public site directory (site/). This edition does not copy their polygon ' +
+  'coordinates into the published bundles: per-feature redistribution rights are not confirmed. A shared edge or a ' +
+  'similarity ratio is not a license determination, and these outlines are not described here as independently ' +
+  'hand-drawn. CHGIS V6 / Hartwell prefecture boundaries and DataV/Amap modern province outlines are not included. ' +
+  'This notice is not a legal clearance.';
 const SCALE = 100;
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-';
 
@@ -198,6 +200,7 @@ function encodeBundle(doc, { keys = Object.keys(doc.snapshots), isBoot = false }
     const label = `${where} → ${feature.title || `#${docIndex}`}`;
     const raw = {};
     for (const [key, value] of Object.entries(feature)) {
+      if (key === 'shape' && !PUBLISH_POLYGONS) continue;
       if (key !== 'shape' || !value) {
         raw[key] = value;
       } else if (value.type === 'Polygon') {
@@ -223,6 +226,10 @@ function encodeBundle(doc, { keys = Object.keys(doc.snapshots), isBoot = false }
   for (const key of keys) {
     const snap = doc.snapshots[key];
     if (snap === undefined) throw new Error(`Unknown snapshot key: ${key}`);
+    if (key === 'neighbors' && !PUBLISH_POLYGONS) {
+      d[key] = [];
+      continue;
+    }
     if (Array.isArray(snap)) {
       d[key] = snap.map((idx) => featureId(idx, key));
     } else {

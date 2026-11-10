@@ -36,6 +36,7 @@ const SYNC_CONTROLLER_SCRIPTS = [
 
 const STATIC_TAG_ASSETS = [
   'css/style.css',
+  'js/physical_basemap.js',
   'js/china_geo_data.js',
   'js/atlas_boot.js',
   'js/map_data.js',

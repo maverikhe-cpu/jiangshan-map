@@ -48,7 +48,11 @@ async function runApiSearchSuite(ctx) {
   assert.strictEqual(jingkou1205.year, 1205);
   assert.strictEqual(jingkou1205.polity, null);
   assert.strictEqual(jingkou1205.modernProvince, null);
-  assert(jingkou1205.regions.includes('淮南路'), `Expected 淮南路 for 京口, got ${JSON.stringify(jingkou1205.regions)}`);
+  assert.strictEqual(
+    jingkou1205.regions.length,
+    0,
+    '京口 does not get a published 淮南路 outline in this edition'
+  );
 
   // Exact-First check: '西安' and '洛阳' must resolve to the capital settlements, not substring-match a pass's modern description
   const xianHit = ctrl.resolvePlace('西安', 741);
@@ -272,9 +276,10 @@ async function runApiSearchSuite(ctx) {
         }
       }
     }
-    assert(
-      overlapPairsChecked > 300,
-      `Expected to check hundreds of polity pairs, checked ${overlapPairsChecked}`
+    assert.strictEqual(
+      overlapPairsChecked,
+      0,
+      'This edition publishes no polity polygons, so territorial overlap is not measured'
     );
     // Regression anchors for overlaps fixed in this guard's first run
     const tangA1 = snapshots.s_tang_a1;
@@ -481,7 +486,7 @@ async function runApiSearchSuite(ctx) {
     for (const [sk, snap] of Object.entries(snapBundle)) {
       if (!snap || Array.isArray(snap)) continue;
       for (const pol of snap.polities || []) {
-        if (pol.role === 'main') continue;
+        if (pol.role === 'main' || !pol.shape) continue;
         const polys = pol.shape.type === 'Polygon' ? [pol.shape.coordinates] : pol.shape.coordinates;
         for (const poly of polys) {
           const ring = poly[0] || [];
@@ -936,10 +941,10 @@ async function runApiSearchSuite(ctx) {
   const tangLateSnap = snapshots[ctrl._resolveSnapKey(tangDyn, 820)];
   ctrl.lastRenderedSnap = tangLateSnap;
   ctrl._renderGhostDiff(tangPeakSnap, 'fade');
-  assert(
-    ghostNodes.length > 0 &&
-      ghostNodes.some((n) => n.dataset.polityRole === 'protectorate' || n.dataset.polityRole === 'main'),
-    `Expected _renderGhostDiff from Tang peak to Late Tang to emit ghost paths for changed main/protectorate polities, got ${JSON.stringify(ghostNodes)}`
+  assert.strictEqual(
+    ghostNodes.length,
+    0,
+    'Tang peak to Late Tang draws no ghost paths because polity polygons are not published'
   );
   if (ctrl.ghostTimer) {
     clearTimeout(ctrl.ghostTimer);
@@ -971,9 +976,10 @@ async function runApiSearchSuite(ctx) {
   ctrl.activeSnapKey = bsKey;
   ctrl.lastRenderedSnap = snapshots[bsKey];
   ctrl._previewStageGhost(nsKey);
-  assert(
-    ghostNodes.length > 0 && ghostNodes.every((n) => n.attrs.class.includes('is-preview')),
-    'Expected _previewStageGhost to render .is-preview ghost paths'
+  assert.strictEqual(
+    ghostNodes.length,
+    0,
+    '_previewStageGhost draws no preview paths because polity polygons are not published'
   );
   ctrl._clearPreviewGhost();
   assert.strictEqual(ghostNodes.length, 0, 'Expected _clearPreviewGhost to clear preview paths when no fade timer is active');
@@ -1532,22 +1538,8 @@ async function runApiSearchSuite(ctx) {
     const dashun1643 = snapshots.s_ming_c2.polities.find((p) => p.title === '大顺（李自成）');
     const daxi1643 = snapshots.s_ming_c2.polities.find((p) => p.title === '大西（张献忠）');
     assert(
-      ming1643 && !pointInShape(116.401, 39.901, ming1643.shape) && !pointInShape(104.071, 30.571, ming1643.shape),
-      'In 1643 the published Ming outline does not cover Beijing or Chengdu'
-    );
-    assert(
-      dashun1643 &&
-        pointInShape(108.941, 34.341, dashun1643.shape) &&
-        pointInShape(114.311, 34.801, dashun1643.shape) &&
-        !pointInShape(108.941, 34.341, ming1643.shape),
-      'In 1643 s_ming_c2 must map Li Zicheng (大顺（李自成）) in Shaanxi (Xi\'an) and Henan (Kaifeng)'
-    );
-    assert(
-      daxi1643 &&
-        pointInShape(114.311, 30.591, daxi1643.shape) &&
-        pointInShape(112.941, 28.231, daxi1643.shape) &&
-        !pointInShape(114.311, 30.591, ming1643.shape),
-      'In 1643 s_ming_c2 must map Zhang Xianzhong (大西（张献忠）) in Wuchang and Changsha'
+      ming1643 && dashun1643 && daxi1643 && !ming1643.shape && !dashun1643.shape && !daxi1643.shape,
+      'In 1643 the edition names 明, 大顺, and 大西 and does not publish their polygons'
     );
   }
   assert.strictEqual(ctrl._resolveSnapKey(qingDyn, 1644), 's_qing_a00', 'Qing at 1644 CE must resolve to s_qing_a00');
@@ -1557,18 +1549,8 @@ async function runApiSearchSuite(ctx) {
     const ds1644 = snapshots.s_qing_a00.polities.find((p) => p.title === '大顺（李自成）');
     const dx1644 = snapshots.s_qing_a00.polities.find((p) => p.title === '大西（张献忠）');
     assert(
-      q1644 &&
-        nm1644 &&
-        ds1644 &&
-        dx1644 &&
-        pointInShape(116.401, 39.901, q1644.shape) &&
-        !pointInShape(118.801, 32.061, q1644.shape) &&
-        !pointInShape(113.261, 23.131, q1644.shape) &&
-        !pointInShape(118.801, 32.061, nm1644.shape) &&
-        !pointInShape(113.261, 23.131, nm1644.shape) &&
-        pointInShape(108.941, 34.341, ds1644.shape) &&
-        pointInShape(104.071, 30.571, dx1644.shape),
-      'In 1644 published Qing covers Beijing and not Nanjing or Guangzhou; Dashun covers Xi\'an and Daxi covers Chengdu'
+      q1644 && nm1644 && ds1644 && dx1644 && !q1644.shape && !nm1644.shape && !ds1644.shape && !dx1644.shape,
+      'In 1644 the edition names Qing, Southern Ming, Dashun, and Daxi and does not publish their polygons'
     );
   }
   assert.strictEqual(ctrl._resolveSnapKey(qingDyn, 1650), 's_qing_a0', 'Qing at 1650 CE must resolve to s_qing_a0');

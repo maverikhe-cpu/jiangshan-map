@@ -1,6 +1,6 @@
 {
   "type": "FeatureCollection",
-  "license": "Approximate historical boundaries for illustration, not surveyed borders. When reusing, credit Jiangshan Atlas (https://github.com/DeanChensj/jiangshan-map) and the sources in data/atlas/README.md. Prefecture-level (郡/州/府) boundaries from CHGIS V6 and the Hartwell China Historical GIS are omitted, including a ring identical to one of those boundaries and a ring whose edges are mostly that mesh. Those boundaries are not GPL-3.0. DataV/Amap modern province outlines are not in this distribution. Remaining outlines are this project's hand-adjusted drawings. A shared border segment is not a separate license, and this notice is not a legal clearance of every remaining ring.",
+  "license": "These source files are outside the public site directory (site/). This edition does not copy their polygon coordinates into the published bundles: per-feature redistribution rights are not confirmed. A shared edge or a similarity ratio is not a license determination, and these outlines are not described here as independently hand-drawn. CHGIS V6 / Hartwell prefecture boundaries and DataV/Amap modern province outlines are not included. This notice is not a legal clearance.",
   "snapshot": {
     "caption": "秦王政亲政前夕（前242年 · 灭周置三川、东郡与六国合纵终结）",
     "note": "前256—前249年秦灭两周置三川郡，前247年置太原郡，前242年置东郡与齐接界，彻底腰斩六国南北合纵通道；前238年秦王政亲政，部署十年灭六国之战。",

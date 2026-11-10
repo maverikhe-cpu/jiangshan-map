@@ -277,13 +277,13 @@ hit.prefecture;                  // 恒为 null：本发行版不含郡州府多
 | 图层 | 来源 | 授权 |
 | :-- | :-- | :-- |
 | 代码（页面、脚本、CLI、MCP 服务） | 本项目 | GPL-3.0 |
-| 政权疆域轮廓（`polity`） | 以 [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)（GPL-3.0）为起点，此后手工调整。与 CHGIS 府界整环相同、或边数至少一半来自该边界网的环已移除。[上游 issue #74](https://github.com/aourednik/historical-basemaps/issues/74) 仍在询问 GPL-3.0 是否适用于 GeoJSON | 项目手绘。不是逐环许可结论 |
-| 一级政区（`region`：刺史部 / 道 / 路 / 省等） | 依据史籍手工绘制；早期版本来源未记录。边数过半来自 CHGIS 府界网的副本已随府界移除 | 其余为项目手绘。不是逐环许可结论 |
+| 政权疆域轮廓（`polity`） | 以 [aourednik/historical-basemaps](https://github.com/aourednik/historical-basemaps)（GPL-3.0）为起点。[上游 issue #74](https://github.com/aourednik/historical-basemaps/issues/74) 仍在询问 GPL-3.0 是否适用于 GeoJSON。没有逐条来源。相似比例不是许可判断 | **坐标不进入公开包。** 不称为手绘 |
+| 一级政区（`region`：刺史部 / 道 / 路 / 省等） | 没有逐条来源记录 | **坐标不进入公开包。** 不称为手绘 |
 | **郡 / 州 / 府级边界**（`prefecture`） | 曾源自 **CHGIS V6** 与 **Hartwell China Historical GIS**。**本发行版已移除**，含整环副本（如鲁 = 薛郡）和边数过半的副本（如九原郡） | **不随本仓库发布**。不适用 GPL-3.0。学术、非商业、不得再分发。请向 [Harvard Dataverse](https://dataverse.harvard.edu/dataverse/chgis_v6) 获取 |
 | 古地名、重大事件、行迹路线、人物年谱、地名沿革 | 本项目依据史籍整理 | GPL-3.0 |
 | 现代省界 | [DataV GeoAtlas](https://help.aliyun.com/zh/datav/datav-7-0/user-guide/datav-geoatlas-widgets/) 写明数据来自高德，仅供学习和交流 | **不随本仓库发布**。该条款不能证明可以公开托管或再分发 |
-| 河流、湖泊、周边国家 | 项目自述为公有领域，仓库没有另附上游许可链接。与 CHGIS 府界整环相同的邻国环已移除。它们不是 DataV 省界 | 按项目自述保留。不是新的法律意见 |
-| 地形晕渲 | 由 `scripts/build_terrain_tiles.py` 基于 [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/)（公有领域的 **SRTM**、**GMTED2010**、**ETOPO1**）渲染；仓库只发布最细约 1 km/像素的晕渲图片 | GPL-3.0（图片） |
+| 原先打包的河流、湖泊、周边国家 | `js/china_geo_data.js` 旧坐标和 `neighbors.geojson` 没有上游许可链接。仓库自述公有领域，不能当成已经核验 | **本发行版不发布。** 公开底图是 Natural Earth 1:50m 陆地、河流、湖泊（5.1.2，仅自然地理层）。条款：https://www.naturalearthdata.com/about/terms-of-use/ |
+| 地形晕渲 | `scripts/build_terrain_tiles.py` 把 SRTM、Copernicus GLO-90 或 AWS Terrain Tiles 都写成可能的输入。成品没有逐张记录用了哪一个 | **本发行版不发布。** 页面不请求 `assets/terrain/` |
 | 古琴录音 | Wikimedia Commons（《流水》《平沙落雁》《阳关三叠》《醉渔唱晚》《酒狂》） | 公有领域 |
 
 **参考资料（非数据来源）**：边界依据史籍并参照谭其骧主编《中国历史地图集》核对。本仓库不包含该图集的任何图像或数据。
